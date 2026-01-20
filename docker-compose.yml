@@ -1,0 +1,25 @@
+services:
+  db:
+    image: postgres:16
+    container_name: dt_postgres
+    environment:
+      POSTGRES_DB: dt_db
+      POSTGRES_USER: dt_user
+      POSTGRES_PASSWORD: dt_pass
+    volumes:
+      - dt_pgdata:/var/lib/postgresql/data
+
+  web:
+    build: .
+    container_name: dt_fastapi
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql+psycopg://dt_user:dt_pass@db:5432/dt_db
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./:/app
+
+volumes:
+  dt_pgdata:
