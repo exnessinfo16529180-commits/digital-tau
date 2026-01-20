@@ -1,26 +1,80 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Base Template</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Digital TAU{% endblock %}</title>
+
+  <link rel="stylesheet" href="{{ url_for('static', path='css/styles.css') }}">
+  <script defer src="{{ url_for('static', path='js/app.js') }}"></script>
 </head>
-<body>
-    <header>
-        <h1>Welcome</h1>
-        <nav>
-            <ul>
-                <li><a href="#">English</a></li>
-                <li><a href="#">Русский</a></li>
-                <li><a href="#">Қазақша</a></li>
-            </ul>
-        </nav>
-    </header>
-    <main>
-        <section>
-            <h2>Content Block</h2>
-            <p>This is where the content will go.</p>
-        </section>
-    </main>
+
+<body class="page">
+  <!-- HEADER -->
+  <header id="header" class="header">
+    <div class="container header__inner">
+      <a class="brand" href="/">
+        <div class="brand__logo">T</div>
+        <div class="brand__text">
+          <div class="brand__name">TAU</div>
+          <div class="brand__sub">UNIVERSITY</div>
+        </div>
+      </a>
+
+      <nav class="nav">
+        <a href="/" data-i18n="nav.home">Главная</a>
+        <a href="/projects" data-i18n="nav.projects">Проекты</a>
+        <a href="/technologies" data-i18n="nav.technologies">Технологии</a>
+        <a href="/about" data-i18n="nav.about">О платформе</a>
+      </nav>
+
+      <div class="lang">
+        <button class="lang__btn" data-lang="ru">RU</button>
+        <button class="lang__btn" data-lang="kz">KZ</button>
+        <button class="lang__btn" data-lang="en">EN</button>
+      </div>
+
+      <button id="burger" class="burger" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <div id="mobileMenu" class="mobileMenu">
+      <div class="mobileMenu__inner container">
+        <a href="/" data-i18n="nav.home">Главная</a>
+        <a href="/projects" data-i18n="nav.projects">Проекты</a>
+        <a href="/technologies" data-i18n="nav.technologies">Технологии</a>
+        <a href="/about" data-i18n="nav.about">О платформе</a>
+
+        <div class="mobileMenu__langs">
+          <button class="lang__btn" data-lang="ru">RU</button>
+          <button class="lang__btn" data-lang="kz">KZ</button>
+          <button class="lang__btn" data-lang="en">EN</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    <div class="container footer__inner">
+      <div class="footer__left">
+        <div class="brand brand--small">
+          <div class="brand__logo">T</div>
+          <div class="brand__text">
+            <div class="brand__name">TAU</div>
+            <div class="brand__sub">UNIVERSITY</div>
+          </div>
+        </div>
+        <p class="muted">Digital TAU - Innovation & Research Showcase Platform</p>
+      </div>
+      <div class="footer__right muted">
+        © 2026 TAU University. All rights reserved.
+      </div>
+    </div>
+  </footer>
 </body>
 </html>

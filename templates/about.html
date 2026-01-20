@@ -1,48 +1,97 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About Us</title>
-</head>
-<body>
-    <h1>About Us</h1>
-    <h2>Platform Information</h2>
-    <p>This platform is designed to provide resources and services to users...</p>
-    
-    <h2>Mission</h2>
-    <p>Our mission is to empower individuals through accessible information...</p>
-    
-    <h2>Team Description</h2>
-    <p>We have a dedicated team of professionals who work tirelessly to...</p>
-    
-    <h2>Contact Information</h2>
-    <p>If you have any questions, please reach out to us at contact@example.com</p>
+{% extends "base.html" %}
+{% block title %}About | Digital TAU{% endblock %}
 
-    <h2>Русский</h2>
-    <h3>Информация о платформе</h3>
-    <p>Эта платформа предназначена для предоставления ресурсов и услуг пользователям...</p>
-    
-    <h3>Миссия</h3>
-    <p>Наша миссия - дать возможность людям получать доступную информацию...</p>
-    
-    <h3>Описание команды</h3>
-    <p>У нас есть преданная команда профессионалов, которые неустанно работают над...</p>
-    
-    <h3>Контактная информация</h3>
-    <p>Если у вас есть вопросы, свяжитесь с нами по адресу contact@example.com</p>
-    
-    <h2>Қазақша</h2>
-    <h3>Платформа туралы ақпарат</h3>
-    <p>Бұл платформа пайдаланушыларға ресурстар м��н қызметтер ұсыну үшін әзірленген...</p>
-    
-    <h3>Миссия</h3>
-    <p>Біздің миссиямыз - адамдарға қолжетімді ақпарат беру...</p>
-    
-    <h3>Команда сипаттамасы</h3>
-    <p>Біздің кәсіби командамыз қажырлы еңбек етеді...</p>
-    
-    <h3>Байланыс ақпарат</h3>
-    <p>Сұрақтар бойынша бізбен contact@example.com адресі бойынша хабарласыңыз.</p>
-</body>
-</html>
+{% block content %}
+<section class="pageSection">
+  <div class="container">
+
+    <div class="sectionTitle">
+      <h1 data-i18n="nav.about">О платформе</h1>
+      <p class="muted">
+        Digital TAU — platform for showcasing student projects, research and innovations.
+      </p>
+    </div>
+
+    <div class="grid grid--2">
+
+      <!-- Platform -->
+      <article class="panel">
+        <h2 class="panel__title">Platform Information</h2>
+        <p class="muted">
+          This platform is designed to provide resources, visibility and opportunities for students and teams.
+          Projects can be published, categorized, and explored by technologies.
+        </p>
+      </article>
+
+      <!-- Mission -->
+      <article class="panel">
+        <h2 class="panel__title">Mission</h2>
+        <p class="muted">
+          Our mission is to empower students through accessible knowledge, collaboration and modern digital tools.
+        </p>
+      </article>
+
+      <!-- Team -->
+      <article class="panel">
+        <h2 class="panel__title">Team</h2>
+        <p class="muted">
+          Digital TAU is maintained by a dedicated team of students and mentors at TAU University.
+          We continuously improve the platform and add new features.
+        </p>
+      </article>
+
+      <!-- Contact -->
+      <article class="panel">
+        <h2 class="panel__title">Contact</h2>
+        <p class="muted">
+          If you have any questions or want to submit a project, contact us:
+        </p>
+
+        <div class="contactBox">
+          <div class="contactBox__row">
+            <span class="contactBox__label">Email</span>
+            <a class="contactBox__value" href="mailto:contact@example.com">contact@example.com</a>
+          </div>
+          <div class="contactBox__row">
+            <span class="contactBox__label">GitHub</span>
+            <span class="contactBox__value muted">Coming soon</span>
+          </div>
+        </div>
+      </article>
+
+    </div>
+
+    <!-- Localized blocks (optional) -->
+    <div class="pageSection__divider"></div>
+
+    <div class="grid grid--3">
+
+      <article class="panel">
+        <h3 class="panel__title">Русский</h3>
+        <p class="muted">
+          Digital TAU — это витрина проектов студентов и исследовательских работ.
+          Здесь можно публиковать проекты, просматривать технологии и развивать портфолио.
+        </p>
+      </article>
+
+      <article class="panel">
+        <h3 class="panel__title">Қазақша</h3>
+        <p class="muted">
+          Digital TAU — студенттердің жобаларын және зерттеу жұмыстарын көрсетуге арналған платформа.
+          Мұнда жобаларды жариялап, технологияларды қарап, тәжірибе жинауға болады.
+        </p>
+      </article>
+
+      <article class="panel">
+        <h3 class="panel__title">English</h3>
+        <p class="muted">
+          Digital TAU is a platform to showcase student projects and innovations.
+          Publish your work, explore technologies, and build your portfolio.
+        </p>
+      </article>
+
+    </div>
+
+  </div>
+</section>
+{% endblock %}
