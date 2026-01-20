@@ -1,172 +1,45 @@
-<!doctype html>
-<html lang="ru">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Digital TAU</title>
-  <link rel="stylesheet" href="/static/css/styles.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homepage Template</title>
+    <link rel="stylesheet" href="base.css">
 </head>
-
 <body>
-  <!-- HEADER -->
-  <header id="header" class="header">
-    <div class="container header__inner">
-      <a class="logo" href="#home">
-        <span class="logo__mark">T</span>
-        <span class="logo__text">
-          <span class="logo__title">TAU</span>
-          <span class="logo__sub">UNIVERSITY</span>
-        </span>
-      </a>
-
-      <nav class="nav nav--desktop">
-        <a href="/" data-i18n="nav.home">Главная</a>
-        <a href="/projects" data-i18n="nav.projects">Проекты</a>
-        <a href="/technologies" data-i18n="nav.technologies">Технологии</a>
-        <a href="/about" data-i18n="nav.about">О платформе</a>
-
-      </nav>
-
-      <div class="lang">
-        <button class="lang__btn is-active" data-lang="ru">RU</button>
-        <button class="lang__btn" data-lang="kz">KZ</button>
-        <button class="lang__btn" data-lang="en">EN</button>
-      </div>
-
-      <button class="burger" id="burger" aria-label="menu">
-        <span></span><span></span><span></span>
-      </button>
-    </div>
-
-    <div class="container nav nav--mobile" id="mobileMenu">
-      <a href="#home" data-i18n="nav.home">Главная</a>
-      <a href="#projects" data-i18n="nav.projects">Проекты</a>
-      <a href="#technologies" data-i18n="nav.technologies">Технологии</a>
-      <a href="#about" data-i18n="nav.about">О платформе</a>
-    </div>
-  </header>
-
-  <!-- HERO -->
-  <main>
-    <section id="home" class="hero">
-      <div class="hero__bg"></div>
-      <div class="container hero__content">
-        <h1 class="hero__title" data-i18n="hero.title">DIGITAL TAU</h1>
-        <h2 class="hero__subtitle" data-i18n="hero.subtitle">Витрина Инноваций и Исследований</h2>
-        <p class="hero__desc" data-i18n="hero.description">Где встречаются идеи и технология</p>
-
-        <a class="btn btn--primary" href="#projects">
-          <span data-i18n="hero.cta">Explore Projects</span>
-          <span class="btn__arrow">→</span>
-        </a>
-
-        <div class="hero__down">⌄</div>
-      </div>
-    </section>
-
-    <!-- STATS -->
-    <section class="stats">
-      <div class="container stats__grid">
-        <div class="stat">
-          <div class="stat__value"><span id="statProjects">0</span>+</div>
-          <div class="stat__label" data-i18n="stats.projects">Проектов</div>
-        </div>
-
-        <div class="stat">
-          <div class="stat__value"><span id="statStudents">0</span>+</div>
-          <div class="stat__label" data-i18n="stats.students">Студентов</div>
-        </div>
-
-        <div class="stat">
-          <div class="stat__value"><span id="statTech">0</span>+</div>
-          <div class="stat__label" data-i18n="stats.technologies">Технологий</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- PROJECTS -->
-    <section id="projects" class="projects">
-      <div class="container">
-        <h2 class="sectionTitle" data-i18n="nav.projects">Проекты</h2>
-
-        <div class="filters" id="filters">
-          <button class="chip is-active" data-filter="all" data-i18n="filters.all">Все</button>
-          <button class="chip" data-filter="aiml" data-i18n="filters.aiml">AI/ML</button>
-          <button class="chip" data-filter="iot" data-i18n="filters.iot">IoT</button>
-          <button class="chip" data-filter="web" data-i18n="filters.web">Веб</button>
-          <button class="chip" data-filter="mobile" data-i18n="filters.mobile">Мобильные</button>
-          <button class="chip" data-filter="vrar" data-i18n="filters.vrar">VR/AR</button>
-        </div>
-
-        <div class="grid" id="projectsGrid">
-          <!-- карточки появятся через JS (fetch) -->
-        </div>
-      </div>
-    </section>
-
-    <!-- TECHNOLOGIES (заглушка) -->
-    <section id="technologies" class="simpleSection">
-      <div class="container">
-        <h2 class="sectionTitle" data-i18n="nav.technologies">Технологии</h2>
-        <p class="muted" id="techList">Python · React · TensorFlow · Node.js · PostgreSQL · FastAPI · Docker</p>
-      </div>
-    </section>
-
-    <!-- ABOUT (заглушка) -->
-    <section id="about" class="simpleSection">
-      <div class="container">
-        <h2 class="sectionTitle" data-i18n="nav.about">О платформе</h2>
-        <p class="muted">
-          Digital TAU — витрина проектов. Здесь можно публиковать, искать и фильтровать работы студентов и лабораторий.
-        </p>
-      </div>
-    </section>
-  </main>
-
-  <!-- FOOTER -->
-  <footer class="footer">
-    <div class="container footer__grid">
-      <div>
-        <div class="footer__brand">
-          <span class="logo__mark small">T</span>
-          <div>
-            <div class="footer__title">TAU</div>
-            <div class="footer__sub">UNIVERSITY</div>
-          </div>
-        </div>
-        <p class="muted">Digital TAU — Innovation & Research Showcase Platform</p>
-      </div>
-
-      <div>
-        <h4 class="footer__h" data-i18n="nav.home">Главная</h4>
-        <a class="footer__a" href="#about">About Us</a>
-        <a class="footer__a" href="#about">Contact</a>
-        <a class="footer__a" href="#about">Careers</a>
-      </div>
-
-      <div>
-        <h4 class="footer__h" data-i18n="nav.projects">Проекты</h4>
-        <a class="footer__a" href="#projects">Submit Project</a>
-        <a class="footer__a" href="#projects">Guidelines</a>
-        <a class="footer__a" href="#projects">Archive</a>
-      </div>
-
-      <div>
-        <h4 class="footer__h">Social</h4>
-        <div class="social">
-          <a class="social__btn" href="#" aria-label="github">GH</a>
-          <a class="social__btn" href="#" aria-label="linkedin">IN</a>
-          <a class="social__btn" href="#" aria-label="twitter">TW</a>
-          <a class="social__btn" href="#" aria-label="mail">@</a>
-        </div>
-      </div>
-    </div>
-
-    <div class="container footer__bottom">
-      © 2025 TAU University. All rights reserved.
-    </div>
-  </footer>
-
-  <script src="/static/js/app.js"></script>
+    <header>
+        <h1>Welcome to Our Homepage</h1>
+    </header>
+    <main>
+        <section id="featured-projects">
+            <h2>Featured Projects</h2>
+            <div>
+                <!-- Add project cards here -->
+            </div>
+        </section>
+        <section id="statistics-cards">
+            <h2>Statistics</h2>
+            <div class="stats">
+                <div class="stat-card">
+                    <p>Projects: 100</p>
+                </div>
+                <div class="stat-card">
+                    <p>Students: 200</p>
+                </div>
+                <div class="stat-card">
+                    <p>Technologies: 50</p>
+                </div>
+            </div>
+        </section>
+        <section id="call-to-action">
+            <h2>Join Us!</h2>
+            <p>Be a part of our amazing community.
+                <button>Sign Up</button>
+            </p>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2026 Our Project</p>
+    </footer>
 </body>
 </html>
