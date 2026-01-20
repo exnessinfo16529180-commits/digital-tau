@@ -1,11 +1,12 @@
 services:
   db:
     image: postgres:16
-    container_name: dt_postgres
     environment:
-      POSTGRES_DB: dt_db
       POSTGRES_USER: dt_user
       POSTGRES_PASSWORD: dt_pass
+      POSTGRES_DB: dt_db
+    ports:
+      - "5432:5432"
     volumes:
       - dt_pgdata:/var/lib/postgresql/data
 
@@ -20,6 +21,7 @@ services:
       - "8000:8000"
     volumes:
       - ./:/app
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
 volumes:
   dt_pgdata:
