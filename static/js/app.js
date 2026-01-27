@@ -1,18 +1,26 @@
 /* =========================
    Digital TAU - app.js (safe for multi-page)
-   Works on:
-   - /            (home)
-   - /projects    (projects page)
+   Pages:
+   - /            (home preview: featured)
+   - /projects    (projects page: all + filters)
    - /technologies
    - /about
    ========================= */
 
 "use strict";
 
+/* -------------------------
+   i18n
+------------------------- */
 const translations = {
   ru: {
     nav: { home: "Главная", projects: "Проекты", technologies: "Технологии", about: "О платформе" },
-    hero: { title: "DIGITAL TAU", subtitle: "Витрина Инноваций и Исследований", description: "Где встречаются идеи и технологии", cta: "Explore Projects" },
+    hero: {
+      title: "DIGITAL TAU",
+      subtitle: "Витрина Инноваций и Исследований",
+      description: "Где встречаются идеи и технологии",
+      cta: "Explore Projects"
+    },
     stats: { projects: "Проектов", students: "Студентов", technologies: "Технологий" },
     filters: { all: "Все", aiml: "AI/ML", iot: "IoT", web: "Веб", mobile: "Мобильные", vrar: "VR/AR" },
     card: { view: "View Project" },
@@ -20,7 +28,12 @@ const translations = {
   },
   kz: {
     nav: { home: "Басты бет", projects: "Жобалар", technologies: "Технологиялар", about: "Платформа туралы" },
-    hero: { title: "DIGITAL TAU", subtitle: "Инновация және Зерттеу Витринасы", description: "Идеялар мен технологиялар кездесетін жер", cta: "Жобаларды зерттеу" },
+    hero: {
+      title: "DIGITAL TAU",
+      subtitle: "Инновация және Зерттеу Витринасы",
+      description: "Идеялар мен технологиялар кездесетін жер",
+      cta: "Жобаларды зерттеу"
+    },
     stats: { projects: "Жоба", students: "Студент", technologies: "Технология" },
     filters: { all: "Барлығы", aiml: "AI/ML", iot: "IoT", web: "Веб", mobile: "Мобильді", vrar: "VR/AR" },
     card: { view: "Жобаны ашу" },
@@ -28,7 +41,12 @@ const translations = {
   },
   en: {
     nav: { home: "Home", projects: "Projects", technologies: "Technologies", about: "About" },
-    hero: { title: "DIGITAL TAU", subtitle: "Innovation & Research Showcase", description: "Where ideas meet technology", cta: "Explore Projects" },
+    hero: {
+      title: "DIGITAL TAU",
+      subtitle: "Innovation & Research Showcase",
+      description: "Where ideas meet technology",
+      cta: "Explore Projects"
+    },
     stats: { projects: "Projects", students: "Students", technologies: "Technologies" },
     filters: { all: "All", aiml: "AI/ML", iot: "IoT", web: "Web", mobile: "Mobile", vrar: "VR/AR" },
     card: { view: "View Project" },
@@ -42,7 +60,7 @@ const DEFAULT_FILTER = "all";
 const state = {
   lang: loadLang(),
   filter: loadFilter(),
-  projects: [] // сюда загрузим с /api/projects
+  projects: []
 };
 
 /* -------------------------
@@ -60,10 +78,24 @@ function escapeHtml(str) {
     .replaceAll("'", "&#039;");
 }
 
+function normalizePath(p) {
+  const x = (p || "").split("?")[0].split("#")[0];
+  return x.replace(/\/+$/, "") || "/";
+}
+
+function isHttpUrl(url) {
+  if (!url) return false;
+  try {
+    const u = new URL(url, window.location.origin);
+    return u.protocol === "http:" || u.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 function loadLang() {
   const saved = localStorage.getItem("dt_lang");
-  if (saved && translations[saved]) return saved;
-  return DEFAULT_LANG;
+  return (saved && translations[saved]) ? saved : DEFAULT_LANG;
 }
 function saveLang(lang) { localStorage.setItem("dt_lang", lang); }
 
@@ -74,8 +106,16 @@ function saveFilter(filter) { localStorage.setItem("dt_filter", filter); }
 
 function getT() { return translations[state.lang] || translations[DEFAULT_LANG]; }
 
+function readT(key) {
+  const t = getT();
+  const parts = String(key || "").split(".");
+  let value = t;
+  for (const p of parts) value = value?.[p];
+  return (typeof value === "string") ? value : null;
+}
+
 /* -------------------------
-   Header scroll effect
+   UI: header + mobile menu
 ------------------------- */
 function initHeaderScroll() {
   const header = qs("#header");
@@ -85,32 +125,25 @@ function initHeaderScroll() {
   onScroll();
 }
 
-/* -------------------------
-   Mobile menu
-------------------------- */
 function initMobileMenu() {
   const burger = qs("#burger");
   const mobileMenu = qs("#mobileMenu");
   if (!burger || !mobileMenu) return;
 
   burger.addEventListener("click", () => mobileMenu.classList.toggle("is-open"));
-  qsa("a", mobileMenu).forEach(a => a.addEventListener("click", () => mobileMenu.classList.remove("is-open")));
+
+  // close on link click
+  qsa("a", mobileMenu).forEach(a => {
+    a.addEventListener("click", () => mobileMenu.classList.remove("is-open"));
+  });
 }
 
 /* -------------------------
-   Translations
+   i18n apply
 ------------------------- */
 function setLangUI(lang) {
   qsa(".lang__btn").forEach(btn => btn.classList.toggle("is-active", btn.dataset.lang === lang));
   document.documentElement.setAttribute("lang", lang);
-}
-
-function readT(key) {
-  const t = getT();
-  const parts = key.split(".");
-  let value = t;
-  for (const p of parts) value = value?.[p];
-  return (typeof value === "string") ? value : null;
 }
 
 function applyTranslations() {
@@ -119,10 +152,6 @@ function applyTranslations() {
     const v = key ? readT(key) : null;
     if (v) el.textContent = v;
   });
-
-  // CTA на главной: ведём на /projects
-  const cta = qs("#heroCta");
-  if (cta) cta.setAttribute("href", "/projects");
 }
 
 function initLanguageSwitcher() {
@@ -140,7 +169,7 @@ function initLanguageSwitcher() {
       setLangUI(lang);
       applyTranslations();
 
-      // Просто перерисуем карточки в новом языке (без повторного fetch)
+      // re-render cards (no refetch)
       if (qs("#projectsGrid")) renderProjects();
     });
   });
@@ -149,11 +178,6 @@ function initLanguageSwitcher() {
 /* -------------------------
    Active nav highlight
 ------------------------- */
-function normalizePath(p) {
-  const x = (p || "").split("?")[0].split("#")[0];
-  return x.replace(/\/+$/, "") || "/";
-}
-
 function initActiveNav() {
   const path = normalizePath(window.location.pathname);
   qsa(".nav a").forEach(a => {
@@ -203,7 +227,39 @@ async function loadStats() {
 }
 
 /* -------------------------
-   Projects
+   Projects: normalize technologies
+------------------------- */
+function normalizeTechnologies(value) {
+  // always return array of strings
+  if (Array.isArray(value)) return value.map(String).filter(Boolean);
+
+  if (typeof value === "string") {
+    let s = value.trim();
+
+    // Postgres array text form: "{Python,TensorFlow,React}"
+    if (s.startsWith("{") && s.endsWith("}")) {
+      s = s.slice(1, -1).trim();
+      if (!s) return [];
+      const parts = s.split(",").map(x => x.trim()).filter(Boolean);
+
+      // if it's letters -> join into one word
+      if (parts.length > 0 && parts.every(p => p.length === 1)) return [parts.join("")];
+      return parts;
+    }
+
+    // "Python, TensorFlow, React"
+    if (s.includes(",")) {
+      return s.split(",").map(x => x.trim()).filter(Boolean);
+    }
+
+    return s ? [s] : [];
+  }
+
+  return [];
+}
+
+/* -------------------------
+   Projects: title/desc
 ------------------------- */
 function getTitle(p) {
   if (state.lang === "ru") return p.titleRu;
@@ -216,6 +272,9 @@ function getDesc(p) {
   return p.descriptionEn;
 }
 
+/* -------------------------
+   Projects: load + render
+------------------------- */
 function setFilterUI(filter) {
   const filtersEl = qs("#filters");
   if (!filtersEl) return;
@@ -223,9 +282,14 @@ function setFilterUI(filter) {
 }
 
 async function loadProjects() {
-  if (!qs("#projectsGrid")) return;
+  const grid = qs("#projectsGrid");
+  if (!grid) return;
 
-  const category = state.filter;
+  // if filters exist => /projects page => use state.filter
+  // else => home preview => request all
+  const filtersEl = qs("#filters");
+  const category = filtersEl ? state.filter : "all";
+
   const url = (category && category !== "all")
     ? `/api/projects?category=${encodeURIComponent(category)}`
     : "/api/projects";
@@ -233,10 +297,23 @@ async function loadProjects() {
   try {
     const res = await fetch(url, { cache: "no-store" });
     if (!res.ok) throw new Error("projects http error");
-    state.projects = await res.json();
+    const data = await res.json();
+
+    state.projects = (Array.isArray(data) ? data : []).map(p => ({
+      ...p,
+      technologies: normalizeTechnologies(p.technologies),
+    }));
   } catch {
     state.projects = [];
   }
+}
+
+function projectLink(p) {
+  // If DB has projectUrl (or project_url), use it.
+  // Else fallback to internal /projects/{id}
+  const url = p.projectUrl || p.project_url || "";
+  if (isHttpUrl(url)) return { href: url, external: true };
+  return { href: `/projects/${encodeURIComponent(p.id)}`, external: false };
 }
 
 function renderProjects() {
@@ -246,7 +323,13 @@ function renderProjects() {
   const t = getT();
   grid.innerHTML = "";
 
-  const list = Array.isArray(state.projects) ? state.projects : [];
+  let list = Array.isArray(state.projects) ? state.projects : [];
+
+  // home page: show only featured
+  if (normalizePath(window.location.pathname) === "/") {
+    list = list.filter(p => !!p.featured);
+  }
+
   if (list.length === 0) {
     const empty = document.createElement("div");
     empty.className = "muted";
@@ -258,26 +341,30 @@ function renderProjects() {
   }
 
   list.forEach(p => {
-    const title = getTitle(p);
-    const desc = getDesc(p);
+    const title = getTitle(p) || "";
+    const desc = getDesc(p) || "";
+
+    const { href, external } = projectLink(p);
+
+    const techBadges = (p.technologies || [])
+      .map(x => `<span class="badge">${escapeHtml(x)}</span>`)
+      .join("");
 
     const card = document.createElement("article");
     card.className = "card";
 
-    const techBadges = (p.technologies || [])
-      .map(x => `<span class="badge" style="letter-spacing:normal">${escapeHtml(x)}</span>`)
-      .join("");
-
     card.innerHTML = `
       <div class="card__img">
-        <img src="${escapeHtml(p.image)}" alt="${escapeHtml(title)}" loading="lazy">
+        <img src="${escapeHtml(p.image || "")}" alt="${escapeHtml(title)}" loading="lazy">
         <div class="card__shade"></div>
       </div>
       <div class="card__body">
-        <h3 class="card__title" style="letter-spacing:normal">${escapeHtml(title)}</h3>
-        <p class="card__desc" style="letter-spacing:normal">${escapeHtml(desc)}</p>
+        <h3 class="card__title">${escapeHtml(title)}</h3>
+        <p class="card__desc">${escapeHtml(desc)}</p>
         <div class="badges">${techBadges}</div>
-        <a class="card__cta" href="/projects/${encodeURIComponent(p.id)}">
+        <a class="card__cta"
+           href="${escapeHtml(href)}"
+           ${external ? 'target="_blank" rel="noopener noreferrer"' : ""}>
           ${escapeHtml(t.card.view)} <span>→</span>
         </a>
       </div>
@@ -308,7 +395,7 @@ function initFilters() {
 }
 
 /* -------------------------
-   Optional: smooth scroll for anchors
+   Smooth anchors (optional)
 ------------------------- */
 function initSmoothAnchorScroll() {
   qsa('a[href^="#"]').forEach(a => {
@@ -337,7 +424,6 @@ function initSmoothAnchorScroll() {
 
   await loadStats();
 
-  // projects only when grid exists
   if (qs("#projectsGrid")) {
     await loadProjects();
     initFilters();

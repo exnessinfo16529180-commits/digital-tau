@@ -5,76 +5,115 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{% block title %}Digital TAU{% endblock %}</title>
 
+  <!-- CSS -->
   <link rel="stylesheet" href="{{ url_for('static', path='css/styles.css') }}">
+
+  <!-- JS -->
   <script defer src="{{ url_for('static', path='js/app.js') }}"></script>
 </head>
 
-<body class="page">
+<body class="page {% block body_class %}{% endblock %}">
+
   <!-- HEADER -->
   <header id="header" class="header">
     <div class="container header__inner">
-      <a class="brand" href="/">
-        <div class="brand__logo">T</div>
-        <div class="brand__text">
-          <div class="brand__name">TAU</div>
-          <div class="brand__sub">UNIVERSITY</div>
+
+      <!-- Logo -->
+      <a class="logo" href="/">
+        <div class="logo__mark">T</div>
+        <div class="logo__text">
+          <div class="logo__title">TAU</div>
+          <div class="logo__sub">UNIVERSITY</div>
         </div>
       </a>
 
-      <nav class="nav">
+      <!-- Desktop nav -->
+      <nav class="nav nav--desktop">
         <a href="/" data-i18n="nav.home">Главная</a>
         <a href="/projects" data-i18n="nav.projects">Проекты</a>
         <a href="/technologies" data-i18n="nav.technologies">Технологии</a>
         <a href="/about" data-i18n="nav.about">О платформе</a>
+
+        <!-- Admin (всегда ведёт на авторизацию) -->
+        <a href="/admin/login" style="margin-left:12px; opacity:.8;">Админ</a>
       </nav>
 
+      <!-- Language switcher -->
       <div class="lang">
-        <button class="lang__btn" data-lang="ru">RU</button>
-        <button class="lang__btn" data-lang="kz">KZ</button>
-        <button class="lang__btn" data-lang="en">EN</button>
+        <button class="lang__btn" type="button" data-lang="ru">RU</button>
+        <button class="lang__btn" type="button" data-lang="kz">KZ</button>
+        <button class="lang__btn" type="button" data-lang="en">EN</button>
       </div>
 
-      <button id="burger" class="burger" aria-label="Open menu">
+      <!-- Burger -->
+      <button id="burger" class="burger" type="button" aria-label="Open menu">
         <span></span><span></span><span></span>
       </button>
     </div>
 
-    <div id="mobileMenu" class="mobileMenu">
-      <div class="mobileMenu__inner container">
+    <!-- Mobile nav -->
+    <nav id="mobileMenu" class="nav nav--mobile">
+      <div class="container">
         <a href="/" data-i18n="nav.home">Главная</a>
         <a href="/projects" data-i18n="nav.projects">Проекты</a>
         <a href="/technologies" data-i18n="nav.technologies">Технологии</a>
         <a href="/about" data-i18n="nav.about">О платформе</a>
 
-        <div class="mobileMenu__langs">
-          <button class="lang__btn" data-lang="ru">RU</button>
-          <button class="lang__btn" data-lang="kz">KZ</button>
-          <button class="lang__btn" data-lang="en">EN</button>
+        <a href="/admin/login" style="margin-top:10px; opacity:.9;">Админ</a>
+
+        <div class="lang" style="margin-top:12px;">
+          <button class="lang__btn" type="button" data-lang="ru">RU</button>
+          <button class="lang__btn" type="button" data-lang="kz">KZ</button>
+          <button class="lang__btn" type="button" data-lang="en">EN</button>
         </div>
       </div>
-    </div>
+    </nav>
   </header>
 
-  <main class="main">
+  <!-- PAGE CONTENT -->
+  <main>
     {% block content %}{% endblock %}
   </main>
 
+  <!-- FOOTER -->
   <footer class="footer">
-    <div class="container footer__inner">
-      <div class="footer__left">
-        <div class="brand brand--small">
-          <div class="brand__logo">T</div>
-          <div class="brand__text">
-            <div class="brand__name">TAU</div>
-            <div class="brand__sub">UNIVERSITY</div>
+    <div class="container footer__grid">
+
+      <div>
+        <div class="footer__brand">
+          <div class="logo__mark small">T</div>
+          <div>
+            <div class="footer__title">TAU</div>
+            <div class="footer__sub">UNIVERSITY</div>
           </div>
         </div>
-        <p class="muted">Digital TAU - Innovation & Research Showcase Platform</p>
+        <div class="muted">Digital TAU — Innovation & Research Showcase Platform</div>
       </div>
-      <div class="footer__right muted">
-        © 2026 TAU University. All rights reserved.
+
+      <div>
+        <div class="footer__h">Links</div>
+        <a class="footer__a" href="/projects" data-i18n="nav.projects">Проекты</a>
+        <a class="footer__a" href="/technologies" data-i18n="nav.technologies">Технологии</a>
+        <a class="footer__a" href="/about" data-i18n="nav.about">О платформе</a>
+        <a class="footer__a" href="/admin/login">Админ</a>
       </div>
+
+      <div>
+        <div class="footer__h">Contact</div>
+        <div class="muted">tau@example.com</div>
+      </div>
+
+      <div>
+        <div class="footer__h">© 2026</div>
+        <div class="muted">TAU University</div>
+      </div>
+
+    </div>
+
+    <div class="footer__bottom">
+      All rights reserved.
     </div>
   </footer>
+
 </body>
 </html>

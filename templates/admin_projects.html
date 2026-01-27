@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin – Projects</title>
+  <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body style="background:#000;color:#fff;font-family:Arial">
+
+<div class="container" style="padding:40px">
+
+  <h1>Админка — Проекты</h1>
+
+  <div style="margin:20px 0">
+    <a href="/admin/projects/new" class="btn btn--primary">
+      ➕ Добавить проект
+    </a>
+    <a href="/" class="btn" style="margin-left:10px">
+      ← На сайт
+    </a>
+  </div>
+
+  <table style="width:100%; border-collapse:collapse; margin-top:20px">
+    <thead>
+      <tr style="border-bottom:1px solid #444">
+        <th>ID</th>
+        <th>Название (RU)</th>
+        <th>Категория</th>
+        <th>Featured</th>
+        <th>Действия</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for p in projects %}
+      <tr style="border-bottom:1px solid #222">
+        <td>{{ p.id }}</td>
+        <td>{{ p.title_ru }}</td>
+        <td>{{ p.category }}</td>
+        <td>{{ "✔" if p.featured else "—" }}</td>
+        <td>
+          <a href="/admin/projects/{{ p.id }}/edit">✏️</a>
+
+          <form method="post"
+                action="/admin/projects/{{ p.id }}/delete"
+                style="display:inline"
+                onsubmit="return confirm('Удалить проект?')">
+            <button type="submit">🗑</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+</div>
+</body>
+</html>
