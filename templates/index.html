@@ -1,163 +1,104 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Digital TAU</title>
+{% extends "base.html" %}
 
-  <!-- CSS -->
-  <link rel="stylesheet" href="{{ url_for('static', path='css/styles.css') }}">
+{% block title %}Digital TAU{% endblock %}
+{% block body_class %}page--home{% endblock %}
 
-  <!-- JS -->
-  <script defer src="{{ url_for('static', path='js/app.js') }}"></script>
-</head>
+{% block content %}
 
-<body class="page page--home">
+<!-- HERO -->
+<section class="hero">
+  <div class="hero__bg"></div>
 
-  <!-- HEADER -->
-  <header id="header" class="header">
-    <div class="container header__inner">
+  <div class="container hero__content">
+    <h1 class="hero__title" data-i18n="hero.title">
+      DIGITAL TAU
+    </h1>
 
-      <!-- Logo -->
-      <a class="brand" href="/">
-        <div class="brand__logo">T</div>
-        <div class="brand__text">
-          <div class="brand__name">TAU</div>
-          <div class="brand__sub">UNIVERSITY</div>
-        </div>
+    <h2 class="hero__subtitle" data-i18n="hero.subtitle">
+      Витрина Инноваций и Исследований
+    </h2>
+
+    <p class="hero__desc" data-i18n="hero.description">
+      Где встречаются идеи и технологии
+    </p>
+
+    <div class="hero__actions">
+      <a
+        class="btn btn--primary"
+        href="/projects"
+        data-i18n="hero.cta"
+      >
+        Explore Projects
       </a>
 
-      <!-- Desktop nav -->
-      <nav class="nav">
-        <a href="/" data-i18n="nav.home">Главная</a>
-        <a href="/projects" data-i18n="nav.projects">Проекты</a>
-        <a href="/technologies" data-i18n="nav.technologies">Технологии</a>
-        <a href="/about" data-i18n="nav.about">О платформе</a>
-      </nav>
-
-      <!-- Language switcher -->
-      <div class="lang">
-        <button class="lang__btn" data-lang="ru">RU</button>
-        <button class="lang__btn" data-lang="kz">KZ</button>
-        <button class="lang__btn" data-lang="en">EN</button>
-      </div>
-
-      <!-- Burger -->
-      <button id="burger" class="burger" aria-label="Open menu">
-        <span></span><span></span><span></span>
-      </button>
+      <!-- Кнопка входа в админку -->
+      <a
+        class="btn"
+        href="/admin/login"
+        style="margin-left:12px; background:rgba(255,255,255,.08); color:#fff;"
+      >
+        Админка
+      </a>
     </div>
 
-    <!-- Mobile menu -->
-    <div id="mobileMenu" class="mobileMenu">
-      <div class="mobileMenu__inner container">
-        <a href="/" data-i18n="nav.home">Главная</a>
-        <a href="/projects" data-i18n="nav.projects">Проекты</a>
-        <a href="/technologies" data-i18n="nav.technologies">Технологии</a>
-        <a href="/about" data-i18n="nav.about">О платформе</a>
+    <div class="hero__down">⌄</div>
+  </div>
+</section>
 
-        <div class="mobileMenu__langs">
-          <button class="lang__btn" data-lang="ru">RU</button>
-          <button class="lang__btn" data-lang="kz">KZ</button>
-          <button class="lang__btn" data-lang="en">EN</button>
+<!-- STATS -->
+<section class="stats">
+  <div class="container">
+    <div class="stats__grid">
+
+      <div class="stat">
+        <div class="stat__value">
+          <span id="statProjects">0</span>+
+        </div>
+        <div class="stat__label" data-i18n="stats.projects">
+          Проектов
         </div>
       </div>
-    </div>
-  </header>
 
-  <!-- HERO -->
-  <section class="hero">
-    <div class="hero__bg"></div>
-
-    <div class="container hero__inner">
-      <h1 class="hero__title" data-i18n="hero.title">DIGITAL TAU</h1>
-      <h2 class="hero__subtitle" data-i18n="hero.subtitle">
-        Витрина Инноваций и Исследований
-      </h2>
-      <p class="hero__desc" data-i18n="hero.description">
-        Где встречаются идеи и технология
-      </p>
-
-      <div class="hero__actions">
-        <a class="btn btn--primary" href="/projects" data-i18n="hero.cta">
-          Explore Projects
-        </a>
-      </div>
-
-      <div class="hero__scroll">⌄</div>
-    </div>
-  </section>
-
-  <!-- STATS -->
-  <section class="stats">
-    <div class="container">
-      <div class="stats__grid">
-
-        <div class="statCard">
-          <div class="statCard__value">
-            <span id="statProjects">0</span>+
-          </div>
-          <div class="statCard__label" data-i18n="stats.projects">Проектов</div>
+      <div class="stat">
+        <div class="stat__value">
+          <span id="statStudents">0</span>+
         </div>
-
-        <div class="statCard">
-          <div class="statCard__value">
-            <span id="statStudents">0</span>+
-          </div>
-          <div class="statCard__label" data-i18n="stats.students">Студентов</div>
+        <div class="stat__label" data-i18n="stats.students">
+          Студентов
         </div>
+      </div>
 
-        <div class="statCard">
-          <div class="statCard__value">
-            <span id="statTech">0</span>+
-          </div>
-          <div class="statCard__label" data-i18n="stats.technologies">Технологий</div>
+      <div class="stat">
+        <div class="stat__value">
+          <span id="statTech">0</span>+
         </div>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- FEATURED PROJECTS (Preview grid) -->
-  <section class="projectsPreview">
-    <div class="container">
-      <div class="sectionTitle">
-        <h2 data-i18n="nav.projects">Проекты</h2>
-        <p class="muted">Featured projects from Digital TAU</p>
-      </div>
-
-      <!-- Здесь app.js будет рисовать карточки -->
-      <div id="projectsGrid" class="grid"></div>
-
-      <div class="center">
-        <a class="btn btn--ghost" href="/projects">
-          <span data-i18n="hero.cta">Explore Projects</span> →
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- FOOTER -->
-  <footer class="footer">
-    <div class="container footer__inner">
-      <div class="footer__left">
-        <div class="brand brand--small">
-          <div class="brand__logo">T</div>
-          <div class="brand__text">
-            <div class="brand__name">TAU</div>
-            <div class="brand__sub">UNIVERSITY</div>
-          </div>
+        <div class="stat__label" data-i18n="stats.technologies">
+          Технологий
         </div>
-        <p class="muted">
-          Digital TAU - Innovation & Research Showcase Platform
-        </p>
       </div>
 
-      <div class="footer__right muted">
-        © 2026 TAU University. All rights reserved.
-      </div>
     </div>
-  </footer>
+  </div>
+</section>
 
-</body>
-</html>
+<!-- PROJECTS PREVIEW -->
+<section class="projects">
+  <div class="container">
+
+    <h2 class="sectionTitle" data-i18n="nav.projects">
+      Проекты
+    </h2>
+
+    <!-- СЮДА app.js РИСУЕТ КАРТОЧКИ -->
+    <div id="projectsGrid" class="grid"></div>
+
+    <div style="text-align:center; margin-top:28px;">
+      <a class="btn btn--primary" href="/projects">
+        <span data-i18n="hero.cta">Explore Projects</span> →
+      </a>
+    </div>
+
+  </div>
+</section>
+
+{% endblock %}

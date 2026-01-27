@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='css/styles.css') }}">
+</head>
+<body style="padding-top:90px;">
+  <div class="container">
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px;">
+      <h1 style="margin:0;">Admin panel</h1>
+      <form method="post" action="/admin/logout" style="margin:0;">
+        <button class="chip" type="submit">Logout</button>
+      </form>
+    </div>
+
+    <!-- ADD -->
+    <div class="card" style="padding:18px; margin-bottom:18px;">
+      <h2 style="margin:0 0 12px;">Добавить проект</h2>
+
+      <form method="post" action="/admin/projects" enctype="multipart/form-data" style="display:grid; gap:10px;">
+        <div style="display:grid; gap:10px; grid-template-columns: 1fr 1fr 1fr;">
+          <input name="title_ru" placeholder="title_ru" required>
+          <input name="title_kz" placeholder="title_kz" required>
+          <input name="title_en" placeholder="title_en" required>
+        </div>
+
+        <textarea name="description_ru" placeholder="description_ru" required rows="2"></textarea>
+        <textarea name="description_kz" placeholder="description_kz" required rows="2"></textarea>
+        <textarea name="description_en" placeholder="description_en" required rows="2"></textarea>
+
+        <input name="technologies" placeholder="technologies: Python, React, FastAPI">
+        <input name="project_url" placeholder="project_url (например https://...)">
+
+        <div style="display:grid; gap:10px; grid-template-columns: 1fr 1fr;">
+          <input name="image_url" placeholder="image_url (если не грузишь файл)">
+          <input name="image_file" type="file" accept="image/*">
+        </div>
+
+        <div style="display:grid; gap:10px; grid-template-columns: 1fr 1fr 1fr;">
+          <select name="category" required>
+            <option value="aiml">aiml</option>
+            <option value="iot">iot</option>
+            <option value="web">web</option>
+            <option value="mobile">mobile</option>
+            <option value="vrar">vrar</option>
+          </select>
+
+          <label class="chip" style="display:flex; align-items:center; gap:10px;">
+            <input type="checkbox" name="featured">
+            featured
+          </label>
+
+          <button class="btn btn--primary" type="submit">Добавить</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- LIST -->
+    <div class="card" style="padding:18px;">
+      <h2 style="margin:0 0 12px;">Проекты ({{ projects|length }})</h2>
+
+      <div style="display:grid; gap:12px;">
+        {% for p in projects %}
+          <div style="border:1px solid rgba(255,255,255,.10); border-radius:14px; padding:12px;">
+            <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start;">
+              <div>
+                <div style="font-weight:900;">#{{ p.id }} — {{ p.titleRu }}</div>
+                <div class="muted" style="margin-top:4px;">
+                  category: <b>{{ p.category }}</b> • featured: <b>{{ p.featured }}</b>
+                </div>
+                <div class="muted" style="margin-top:6px;">
+                  image: {{ p.image }}<br>
+                  url: {{ p.project_url }}
+                </div>
+              </div>
+
+              <div style="display:flex; gap:8px;">
+                <a class="chip" href="/admin?edit_id={{ p.id }}">Edit</a>
+                <form method="post" action="/admin/projects/{{ p.id }}/delete" style="margin:0;">
+                  <button class="chip" type="submit" onclick="return confirm('Удалить проект #{{ p.id }}?')">
+                    Delete
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            {% if edit_project and edit_project.id == p.id %}
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    {% if edit_project %}
+    <!-- EDIT FORM -->
+    <div class="card" style="padding:18px; margin-top:18px;">
+      <h2 style="margin:0 0 12px;">Редактировать #{{ edit_project.id }}</h2>
+
+      <form method="post" action="/admin/projects/{{ edit_project.id }}" enctype="multipart/form-data" style="display:grid; gap:10px;">
+        <div style="display:grid; gap:10px; grid-template-columns: 1fr 1fr 1fr;">
+          <input name="title_ru" value="{{ edit_project.titleRu }}" required>
+          <input name="title_kz" value="{{ edit_project.titleKz }}" required>
+          <input name="title_en" value="{{ edit_project.titleEn }}" required>
+        </div>
+
+        <textarea name="description_ru" required rows="2">{{ edit_project.descriptionRu }}</textarea>
+        <textarea name="description_kz" required rows="2">{{ edit_project.descriptionKz }}</textarea>
+        <textarea name="description_en" required rows="2">{{ edit_project.descriptionEn }}</textarea>
+
+        <input name="technologies" value="{{ edit_project.technologies | join(', ') }}" placeholder="Python, React">
+        <input name="project_url" value="{{ edit_project.project_url or '' }}" placeholder="project_url">
+
+        <div style="display:grid; gap:10px; grid-template-columns: 1fr 1fr;">
+          <input name="image_url" value="{{ edit_project.image or '' }}" placeholder="image_url (или оставь как есть)">
+          <input name="image_file" type="file" accept="image/*">
+        </div>
+
+        <div style="display:grid; gap:10px; grid-template-columns: 1fr 1fr 1fr;">
+          <select name="category" required>
+            <option value="aiml" {% if edit_project.category=='aiml' %}selected{% endif %}>aiml</option>
+            <option value="iot" {% if edit_project.category=='iot' %}selected{% endif %}>iot</option>
+            <option value="web" {% if edit_project.category=='web' %}selected{% endif %}>web</option>
+            <option value="mobile" {% if edit_project.category=='mobile' %}selected{% endif %}>mobile</option>
+            <option value="vrar" {% if edit_project.category=='vrar' %}selected{% endif %}>vrar</option>
+          </select>
+
+          <label class="chip" style="display:flex; align-items:center; gap:10px;">
+            <input type="checkbox" name="featured" {% if edit_project.featured %}checked{% endif %}>
+            featured
+          </label>
+
+          <button class="btn btn--primary" type="submit">Сохранить</button>
+        </div>
+
+        <a class="chip" href="/admin">Закрыть редактирование</a>
+      </form>
+    </div>
+    {% endif %}
+
+  </div>
+
+  <style>
+    input, textarea, select{
+      padding:12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.15);
+      background:rgba(255,255,255,.05);
+      color:#fff;
+      outline:none;
+    }
+    textarea{ resize: vertical; }
+  </style>
+</body>
+</html>

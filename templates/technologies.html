@@ -1,117 +1,24 @@
 {% extends "base.html" %}
+
 {% block title %}Technologies | Digital TAU{% endblock %}
+{% block body_class %}page--tech{% endblock %}
 
 {% block content %}
-<section class="pageSection">
-  <div class="container">
-
-    <div class="sectionTitle">
-      <h1 data-i18n="nav.technologies">Технологии</h1>
+  <section class="simpleSection" style="padding-top:110px;">
+    <div class="container">
+      <h1 class="sectionTitle" data-i18n="nav.technologies">Технологии</h1>
       <p class="muted">
-        Technology stack used across Digital TAU projects
+        Здесь можно будет сделать список технологий, фильтры, теги и поиск.
       </p>
+
+      <div class="card" style="margin-top:18px;">
+        <div class="card__body">
+          <h3 class="card__title">Coming soon</h3>
+          <p class="card__desc">
+            Подключим позже: уникальные технологии из БД и карточки.
+          </p>
+        </div>
+      </div>
     </div>
-
-    <div class="grid grid--2">
-
-      <!-- Frontend -->
-      <article class="panel">
-        <div class="panel__head">
-          <div class="panel__icon">🎨</div>
-          <h2 class="panel__title">Frontend Technologies</h2>
-        </div>
-
-        <p class="muted">
-          Technologies used for the client side (UI/UX, pages, interactions).
-        </p>
-
-        <div class="badges">
-          <span class="badge">HTML</span>
-          <span class="badge">CSS</span>
-          <span class="badge">JavaScript</span>
-        </div>
-
-        <div class="panel__stat">
-          <span class="panel__statLabel">Usage Statistics</span>
-          <span class="panel__statValue">75%</span>
-        </div>
-      </article>
-
-      <!-- Backend -->
-      <article class="panel">
-        <div class="panel__head">
-          <div class="panel__icon">⚙️</div>
-          <h2 class="panel__title">Backend Technologies</h2>
-        </div>
-
-        <p class="muted">
-          Technologies used for the server side (API, logic, security).
-        </p>
-
-        <div class="badges">
-          <span class="badge">Python</span>
-          <span class="badge">FastAPI</span>
-          <span class="badge">Uvicorn</span>
-        </div>
-
-        <div class="panel__stat">
-          <span class="panel__statLabel">Usage Statistics</span>
-          <span class="panel__statValue">65%</span>
-        </div>
-      </article>
-
-      <!-- Database -->
-      <article class="panel">
-        <div class="panel__head">
-          <div class="panel__icon">🗄️</div>
-          <h2 class="panel__title">Database Technologies</h2>
-        </div>
-
-        <p class="muted">
-          Technologies for data storage, management, and queries.
-        </p>
-
-        <div class="badges">
-          <span class="badge">PostgreSQL</span>
-          <span class="badge">SQLAlchemy</span>
-          <span class="badge">Docker</span>
-        </div>
-
-        <div class="panel__stat">
-          <span class="panel__statLabel">Usage Statistics</span>
-          <span class="panel__statValue">80%</span>
-        </div>
-      </article>
-
-      <!-- DevOps / Tools -->
-      <article class="panel">
-        <div class="panel__head">
-          <div class="panel__icon">🚀</div>
-          <h2 class="panel__title">DevOps & Tools</h2>
-        </div>
-
-        <p class="muted">
-          Tools for deployment, teamwork, and automation.
-        </p>
-
-        <div class="badges">
-          <span class="badge">GitHub</span>
-          <span class="badge">Docker Compose</span>
-          <span class="badge">Linux</span>
-        </div>
-
-        <div class="panel__stat">
-          <span class="panel__statLabel">Focus</span>
-          <span class="panel__statValue">Production</span>
-        </div>
-      </article>
-
-    </div>
-
-    <div class="note muted" style="margin-top: 18px;">
-      Translated into Russian, Kazakh, and English (language switcher in the header).
-    </div>
-
-  </div>
-</section>
+  </section>
 {% endblock %}

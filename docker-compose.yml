@@ -17,6 +17,9 @@ services:
       - db
     environment:
       DATABASE_URL: postgresql+psycopg://dt_user:dt_pass@db:5432/dt_db
+      ADMIN_USER: admin
+      ADMIN_PASS: admin123
+      SECRET_KEY: super-secret-change-me
     ports:
       - "8000:8000"
     volumes:

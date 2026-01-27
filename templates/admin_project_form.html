@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin – Project</title>
+  <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+
+<body style="background:#000;color:#fff;font-family:Arial">
+<div class="container" style="padding:40px; max-width:800px">
+
+  <h1>{{ "Редактировать" if project else "Новый" }} проект</h1>
+
+  <form method="post" enctype="multipart/form-data">
+
+    <h3>Названия</h3>
+    <input name="title_ru" placeholder="Название (RU)" value="{{ project.title_ru if project else '' }}" required>
+    <input name="title_kz" placeholder="Название (KZ)" value="{{ project.title_kz if project else '' }}" required>
+    <input name="title_en" placeholder="Название (EN)" value="{{ project.title_en if project else '' }}" required>
+
+    <h3>Описание</h3>
+    <textarea name="description_ru" placeholder="Описание (RU)" required>{{ project.description_ru if project else '' }}</textarea>
+    <textarea name="description_kz" placeholder="Описание (KZ)" required>{{ project.description_kz if project else '' }}</textarea>
+    <textarea name="description_en" placeholder="Описание (EN)" required>{{ project.description_en if project else '' }}</textarea>
+
+    <h3>Технологии</h3>
+    <input name="technologies"
+           placeholder="Python, FastAPI, PostgreSQL"
+           value="{{ project.technologies | join(', ') if project else '' }}"
+           required>
+
+    <h3>Категория</h3>
+    <select name="category">
+      <option value="aiml">AI / ML</option>
+      <option value="iot">IoT</option>
+      <option value="web">Web</option>
+      <option value="mobile">Mobile</option>
+      <option value="vrar">VR / AR</option>
+    </select>
+
+    <h3>Ссылка на проект</h3>
+    <input name="project_url"
+           placeholder="https://github.com/..."
+           value="{{ project.project_url if project else '' }}">
+
+    <h3>Изображение</h3>
+    {% if project and project.image %}
+      <img src="{{ project.image }}" style="max-width:200px; display:block; margin-bottom:10px">
+    {% endif %}
+    <input type="file" name="image">
+
+    <label style="display:block; margin-top:10px">
+      <input type="checkbox" name="featured" {% if project and project.featured %}checked{% endif %}>
+      Featured
+    </label>
+
+    <div style="margin-top:20px">
+      <button class="btn btn--primary" type="submit">💾 Сохранить</button>
+      <a href="/admin/projects" class="btn" style="margin-left:10px">← Назад</a>
+    </div>
+
+  </form>
+
+</div>
+</body>
+</html>
