@@ -1,6 +1,7 @@
 services:
   db:
     image: postgres:16
+    container_name: dt_db
     environment:
       POSTGRES_USER: dt_user
       POSTGRES_PASSWORD: dt_pass
@@ -9,6 +10,7 @@ services:
       - "5432:5432"
     volumes:
       - dt_pgdata:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d
 
   web:
     build: .
