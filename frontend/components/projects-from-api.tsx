@@ -10,7 +10,7 @@ import type { UiProject } from "@/lib/mappers/project.mapper"
 const API_BASE =
   (process.env.NEXT_PUBLIC_API_BASE_URL ||
     process.env.NEXT_PUBLIC_API_URL ||
-    "http://localhost:8000"
+    ""
   ).replace(/\/+$/, "")
 
 function normalizeImage(apiBase: string, img?: string) {

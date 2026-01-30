@@ -10,7 +10,7 @@ import type { UiProject } from "@/lib/mappers/project.mapper"
 
 // -------- helpers --------
 const API_BASE =
-  (process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000").replace(/\/+$/, "")
+  (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(/\/+$/, "")
 
 function normalizeImage(img?: string) {
   if (!img) return ""
@@ -208,7 +208,7 @@ export default function ProjectsPage() {
           <div className="text-center py-10 text-red-400">
             {error}
             <div className="text-sm text-muted-foreground mt-2">
-              {t("checkApi", { port: 8000 })}
+              {t("checkApi")}
             </div>
           </div>
         )}

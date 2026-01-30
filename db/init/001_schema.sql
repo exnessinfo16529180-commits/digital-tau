@@ -28,7 +28,10 @@ CREATE TABLE IF NOT EXISTS technologies (
 
 CREATE TABLE IF NOT EXISTS categories (
   id SERIAL PRIMARY KEY,
-  name TEXT NOT NULL UNIQUE
+  name TEXT NOT NULL UNIQUE,
+  name_ru TEXT NOT NULL DEFAULT '',
+  name_kz TEXT NOT NULL DEFAULT '',
+  name_en TEXT NOT NULL DEFAULT ''
 );
 
 CREATE TABLE IF NOT EXISTS genres (
@@ -36,6 +39,13 @@ CREATE TABLE IF NOT EXISTS genres (
   name TEXT NOT NULL UNIQUE
 );
 
-INSERT INTO categories (name) VALUES
-  ('aiml'), ('iot'), ('web'), ('mobile'), ('vrar')
-ON CONFLICT (name) DO NOTHING;
+INSERT INTO categories (name, name_ru, name_kz, name_en) VALUES
+  ('aiml', 'AI/ML', 'AI/ML', 'AI/ML'),
+  ('iot', 'IoT', 'IoT', 'IoT'),
+  ('web', 'Web', 'Web', 'Web'),
+  ('mobile', 'Mobile', 'Mobile', 'Mobile'),
+  ('vrar', 'VR/AR', 'VR/AR', 'VR/AR')
+ON CONFLICT (name) DO UPDATE SET
+  name_ru = EXCLUDED.name_ru,
+  name_kz = EXCLUDED.name_kz,
+  name_en = EXCLUDED.name_en;

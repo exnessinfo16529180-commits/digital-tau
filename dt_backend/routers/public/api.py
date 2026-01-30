@@ -92,9 +92,23 @@ def create_public_api_router(engine: Engine) -> APIRouter:
     def api_categories():
         try:
             with engine.connect() as conn:
-                rows = conn.execute(text("SELECT name FROM categories ORDER BY name ASC")).mappings().all()
+                rows = conn.execute(
+                    text("SELECT id, name, name_ru, name_kz, name_en FROM categories ORDER BY name ASC")
+                ).mappings().all()
                 if rows:
-                    return [r["name"] for r in rows]
+                    out = []
+                    for r in rows:
+                        code = r["name"]
+                        out.append(
+                            {
+                                "id": int(r["id"]),
+                                "code": code,
+                                "nameRu": r.get("name_ru") or code,
+                                "nameKz": r.get("name_kz") or code,
+                                "nameEn": r.get("name_en") or code,
+                            }
+                        )
+                    return out
 
                 derived = conn.execute(
                     text(
@@ -106,7 +120,7 @@ def create_public_api_router(engine: Engine) -> APIRouter:
                         """
                     )
                 ).mappings().all()
-                return [r["name"] for r in derived]
+                return [{"code": r["name"], "nameRu": r["name"], "nameKz": r["name"], "nameEn": r["name"]} for r in derived]
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"categories db error: {e}")
 
@@ -135,6 +149,10 @@ def create_public_api_router(engine: Engine) -> APIRouter:
 
     @router.get("/health")
     def health():
+        return {"status": "ok"}
+
+    @router.get("/api/health")
+    def api_health():
         return {"status": "ok"}
 
     return router

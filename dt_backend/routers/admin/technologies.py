@@ -11,7 +11,7 @@ from ...utils import escape_html
 def create_admin_technologies_router(engine: Engine) -> APIRouter:
     router = APIRouter(tags=["admin-technologies"])
 
-    @router.get("/admin/technologies", response_class=HTMLResponse)
+    @router.get("/api/admin/technologies", response_class=HTMLResponse)
     def admin_technologies(request: Request):
         require_login(request)
 
@@ -26,7 +26,7 @@ def create_admin_technologies_router(engine: Engine) -> APIRouter:
                   <td style="padding:10px;border-bottom:1px solid #222;">{r["id"]}</td>
                   <td style="padding:10px;border-bottom:1px solid #222;">{escape_html(r["name"])}</td>
                   <td style="padding:10px;border-bottom:1px solid #222;">
-                    <form style="display:inline" method="post" action="/admin/technologies/{r["id"]}/delete"
+                    <form style="display:inline" method="post" action="/api/admin/technologies/{r["id"]}/delete"
                           onsubmit="return confirm('Delete technology #{r["id"]}?');">
                       <button style="background:transparent;border:0;color:#ff5b5b;cursor:pointer;">Delete</button>
                     </form>
@@ -37,7 +37,7 @@ def create_admin_technologies_router(engine: Engine) -> APIRouter:
 
         body = f"""
           <div style="display:flex;gap:12px;align-items:end;margin-bottom:14px;">
-            <form method="post" action="/admin/technologies/new" style="display:flex;gap:10px;align-items:end;flex-wrap:wrap;">
+            <form method="post" action="/api/admin/technologies/new" style="display:flex;gap:10px;align-items:end;flex-wrap:wrap;">
               <div>
                 <label style="display:block;margin-bottom:6px;opacity:.85;">New technology name</label>
                 <input name="name" required
@@ -64,13 +64,13 @@ def create_admin_technologies_router(engine: Engine) -> APIRouter:
         """
         return HTMLResponse(admin_layout("Admin • Technologies", body))
 
-    @router.post("/admin/technologies/new")
+    @router.post("/api/admin/technologies/new")
     def admin_technologies_create(request: Request, name: str = Form(...)):
         require_login(request)
 
         clean = (name or "").strip()
         if not clean:
-            return RedirectResponse("/admin/technologies", status_code=302)
+            return RedirectResponse("/api/admin/technologies", status_code=302)
 
         with engine.begin() as conn:
             conn.execute(
@@ -78,16 +78,15 @@ def create_admin_technologies_router(engine: Engine) -> APIRouter:
                 {"name": clean},
             )
 
-        return RedirectResponse("/admin/technologies", status_code=302)
+        return RedirectResponse("/api/admin/technologies", status_code=302)
 
-    @router.post("/admin/technologies/{tech_id}/delete")
+    @router.post("/api/admin/technologies/{tech_id}/delete")
     def admin_technologies_delete(tech_id: int, request: Request):
         require_login(request)
 
         with engine.begin() as conn:
             conn.execute(text("DELETE FROM technologies WHERE id = :id"), {"id": tech_id})
 
-        return RedirectResponse("/admin/technologies", status_code=302)
+        return RedirectResponse("/api/admin/technologies", status_code=302)
 
     return router
-

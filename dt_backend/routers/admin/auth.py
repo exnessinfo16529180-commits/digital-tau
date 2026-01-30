@@ -16,21 +16,25 @@ def require_login(request: Request):
 def create_admin_auth_router(settings: Settings) -> APIRouter:
     router = APIRouter(tags=["admin-auth"])
 
-    @router.get("/admin", response_class=HTMLResponse)
+    @router.get("/api/admin/me")
+    def admin_me(request: Request):
+        return {"loggedIn": is_logged_in(request)}
+
+    @router.get("/api/admin", response_class=HTMLResponse)
     def admin_root(request: Request):
         return RedirectResponse(
-            "/admin/projects" if is_logged_in(request) else "/admin/login",
+            "/api/admin/projects" if is_logged_in(request) else "/api/admin/login",
             status_code=302,
         )
 
-    @router.get("/admin/login", response_class=HTMLResponse)
+    @router.get("/api/admin/login", response_class=HTMLResponse)
     def admin_login_page(request: Request):
         html = """
         <html><head><meta charset="utf-8"><title>Admin login</title></head>
         <body style="margin:0;background:#000;color:#fff;font-family:Arial;">
           <div style="max-width:520px;margin:40px auto;padding:24px;border:1px solid rgba(255,255,255,.15);border-radius:14px;">
             <h2 style="margin:0 0 14px;">Admin login</h2>
-            <form method="post" action="/admin/login">
+            <form method="post" action="/api/admin/login">
               <div style="margin:10px 0;">
                 <label>Login</label><br>
                 <input name="username" style="width:100%;padding:10px;border-radius:10px;border:1px solid #444;background:#111;color:#fff;">
@@ -47,11 +51,11 @@ def create_admin_auth_router(settings: Settings) -> APIRouter:
         """
         return HTMLResponse(html)
 
-    @router.post("/admin/login")
+    @router.post("/api/admin/login")
     async def admin_login(request: Request, username: str = Form(...), password: str = Form(...)):
         if username == settings.admin_user and password == settings.admin_pass:
             request.session["admin_logged_in"] = True
-            return RedirectResponse("/admin/projects", status_code=302)
+            return RedirectResponse("/api/admin/projects", status_code=302)
 
         return HTMLResponse(
             """
@@ -60,17 +64,16 @@ def create_admin_auth_router(settings: Settings) -> APIRouter:
               <div style="max-width:520px;margin:40px auto;padding:24px;border:1px solid rgba(255,255,255,.15);border-radius:14px;">
                 <h2>Login failed</h2>
                 <p style="opacity:.8;">Wrong login or password.</p>
-                <p><a style="color:#F5A623" href="/admin/login">Try again</a></p>
+                <p><a style="color:#F5A623" href="/api/admin/login">Try again</a></p>
               </div>
             </body></html>
             """,
             status_code=401,
         )
 
-    @router.get("/admin/logout")
+    @router.get("/api/admin/logout")
     def admin_logout(request: Request):
         request.session.clear()
         return RedirectResponse(settings.frontend_url, status_code=302)
 
     return router
-

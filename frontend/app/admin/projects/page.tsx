@@ -104,11 +104,17 @@ export default function AdminProjectsPage() {
         fetch(`${API_BASE}/api/genres`, { cache: "no-store" }),
       ])
 
-      const cats = catsRes.ok ? ((await catsRes.json()) as string[]) : []
+      const catsRaw = catsRes.ok ? ((await catsRes.json()) as any) : []
       const techs = techRes.ok ? ((await techRes.json()) as string[]) : []
       const gens = genresRes.ok ? ((await genresRes.json()) as string[]) : []
 
-      setAvailableCategories(Array.isArray(cats) ? cats : [])
+      const cats = Array.isArray(catsRaw)
+        ? catsRaw
+            .map((c: any) => (typeof c === "string" ? c : c?.code))
+            .filter(Boolean)
+        : []
+
+      setAvailableCategories(cats)
       setAvailableTechnologies(Array.isArray(techs) ? techs : [])
       setAvailableGenres(Array.isArray(gens) ? gens : [])
     } catch {
@@ -181,8 +187,8 @@ export default function AdminProjectsPage() {
 
       // важно: админские endpoints у тебя form-data и чаще всего требуют cookie-сессию
       const url = editing
-        ? `${API_BASE}/admin/projects/${encodeURIComponent(String(editing.id))}/edit`
-        : `${API_BASE}/admin/projects/new`
+        ? `${API_BASE}/api/admin/projects/${encodeURIComponent(String(editing.id))}/edit`
+        : `${API_BASE}/api/admin/projects/new`
 
       const res = await fetch(url, {
         method: "POST",
@@ -211,7 +217,7 @@ export default function AdminProjectsPage() {
     setError("")
     try {
       const res = await fetch(
-        `${API_BASE}/admin/projects/${encodeURIComponent(String(p.id))}/delete`,
+        `${API_BASE}/api/admin/projects/${encodeURIComponent(String(p.id))}/delete`,
         { method: "POST", credentials: "include" }
       )
       if (!res.ok) {
@@ -360,7 +366,7 @@ export default function AdminProjectsPage() {
                 options={availableTechnologies}
                 selected={selectedTechnologies}
                 onChange={setSelectedTechnologies}
-                emptyHint='Добавь технологии в "/admin/technologies"'
+                emptyHint='Добавь технологии в "/api/admin/technologies"'
               />
 
               <MultiSelect
@@ -368,7 +374,7 @@ export default function AdminProjectsPage() {
                 options={availableGenres}
                 selected={selectedGenres}
                 onChange={setSelectedGenres}
-                emptyHint='Добавь жанры в "/admin/genres"'
+                emptyHint='Добавь жанры в "/api/admin/genres"'
               />
 
               <Field

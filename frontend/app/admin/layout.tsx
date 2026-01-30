@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation"
 import {
   LayoutDashboard,
   FolderKanban,
+  Tags,
   Cpu,
   Users,
   Settings,
@@ -23,6 +24,7 @@ import { cn } from "@/lib/utils"
 const sidebarItems = [
   { href: "/admin", icon: LayoutDashboard, labelKey: "dashboard" },
   { href: "/admin/projects", icon: FolderKanban, labelKey: "manageProjects" },
+  { href: "/admin/categories", icon: Tags, labelKey: "category" },
   { href: "/admin/technologies", icon: Cpu, labelKey: "manageTech" },
   { href: "/admin/users", icon: Users, labelKey: "users" },
   { href: "/admin/settings", icon: Settings, labelKey: "settings" },

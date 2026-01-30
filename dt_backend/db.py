@@ -22,6 +22,11 @@ def ensure_schema(engine: Engine) -> None:
             )
         )
 
+        # Мультиязычные названия категорий (name = код/slug).
+        conn.execute(text("ALTER TABLE categories ADD COLUMN IF NOT EXISTS name_ru TEXT NOT NULL DEFAULT ''"))
+        conn.execute(text("ALTER TABLE categories ADD COLUMN IF NOT EXISTS name_kz TEXT NOT NULL DEFAULT ''"))
+        conn.execute(text("ALTER TABLE categories ADD COLUMN IF NOT EXISTS name_en TEXT NOT NULL DEFAULT ''"))
+
         conn.execute(
             text(
                 """
@@ -77,9 +82,16 @@ def ensure_schema(engine: Engine) -> None:
         conn.execute(
             text(
                 """
-                INSERT INTO categories (name) VALUES
-                  ('aiml'), ('iot'), ('web'), ('mobile'), ('vrar')
-                ON CONFLICT (name) DO NOTHING;
+                INSERT INTO categories (name, name_ru, name_kz, name_en) VALUES
+                  ('aiml', 'AI/ML', 'AI/ML', 'AI/ML'),
+                  ('iot', 'IoT', 'IoT', 'IoT'),
+                  ('web', 'Web', 'Web', 'Web'),
+                  ('mobile', 'Mobile', 'Mobile', 'Mobile'),
+                  ('vrar', 'VR/AR', 'VR/AR', 'VR/AR')
+                ON CONFLICT (name) DO UPDATE SET
+                  name_ru = EXCLUDED.name_ru,
+                  name_kz = EXCLUDED.name_kz,
+                  name_en = EXCLUDED.name_en;
                 """
             )
         )

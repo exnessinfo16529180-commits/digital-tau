@@ -12,11 +12,11 @@ def admin_layout(title: str, body: str) -> str:
           <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:16px;">
             <h2 style="margin:0;">{escape_html(title)}</h2>
             <div style="display:flex;gap:10px;">
-              <a href="/admin/projects" style="color:#F5A623;text-decoration:none;">Projects</a>
-              <a href="/admin/categories" style="color:#F5A623;text-decoration:none;">Categories</a>
-              <a href="/admin/technologies" style="color:#F5A623;text-decoration:none;">Technologies</a>
-              <a href="/admin/genres" style="color:#F5A623;text-decoration:none;">Genres</a>
-              <a href="/admin/logout" style="color:#F5A623;text-decoration:none;">Logout</a>
+              <a href="/api/admin/projects" style="color:#F5A623;text-decoration:none;">Projects</a>
+              <a href="/api/admin/categories" style="color:#F5A623;text-decoration:none;">Categories</a>
+              <a href="/api/admin/technologies" style="color:#F5A623;text-decoration:none;">Technologies</a>
+              <a href="/api/admin/genres" style="color:#F5A623;text-decoration:none;">Genres</a>
+              <a href="/api/admin/logout" style="color:#F5A623;text-decoration:none;">Logout</a>
             </div>
           </div>
           {body}
@@ -134,7 +134,7 @@ def project_form_html(
             {tech_options_html}
           </select>
           <div style="margin-top:6px;opacity:.7;font-size:12px;">
-            Tip: hold Ctrl/Cmd to select multiple. Add options in <a style="color:#F5A623" href="/admin/technologies">Technologies</a>.
+            Tip: hold Ctrl/Cmd to select multiple. Add options in <a style="color:#F5A623" href="/api/admin/technologies">Technologies</a>.
           </div>
         </div>
         <div>
@@ -152,7 +152,7 @@ def project_form_html(
             {options_html}
           </select>
           <div style="margin-top:6px;opacity:.7;font-size:12px;">
-            Manage in <a style="color:#F5A623" href="/admin/categories">Categories</a>.
+            Manage in <a style="color:#F5A623" href="/api/admin/categories">Categories</a>.
           </div>
         </div>
         <div>
@@ -162,7 +162,7 @@ def project_form_html(
             {genres_options_html}
           </select>
           <div style="margin-top:6px;opacity:.7;font-size:12px;">
-            Manage in <a style="color:#F5A623" href="/admin/genres">Genres</a>.
+            Manage in <a style="color:#F5A623" href="/api/admin/genres">Genres</a>.
           </div>
         </div>
         <div>

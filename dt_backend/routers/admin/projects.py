@@ -29,7 +29,7 @@ def create_admin_projects_router(engine: Engine, uploads_dir: Path) -> APIRouter
             genres = conn.execute(text("SELECT name FROM genres ORDER BY name ASC")).scalars().all()
         return list(categories or []), list(technologies or []), list(genres or [])
 
-    @router.get("/admin/projects", response_class=HTMLResponse)
+    @router.get("/api/admin/projects", response_class=HTMLResponse)
     def admin_projects(request: Request):
         require_login(request)
 
@@ -55,9 +55,9 @@ def create_admin_projects_router(engine: Engine, uploads_dir: Path) -> APIRouter
                   <td style="padding:10px;border-bottom:1px solid #222;">{escape_html(r.get("category",""))}</td>
                   <td style="padding:10px;border-bottom:1px solid #222;">{"✅" if r.get("featured") else "—"}</td>
                   <td style="padding:10px;border-bottom:1px solid #222;">
-                    <a style="color:#F5A623" href="/admin/projects/{r["id"]}/edit">Edit</a>
+                    <a style="color:#F5A623" href="/api/admin/projects/{r["id"]}/edit">Edit</a>
                     &nbsp;|&nbsp;
-                    <form style="display:inline" method="post" action="/admin/projects/{r["id"]}/delete"
+                    <form style="display:inline" method="post" action="/api/admin/projects/{r["id"]}/delete"
                           onsubmit="return confirm('Delete project #{r["id"]}?');">
                       <button style="background:transparent;border:0;color:#ff5b5b;cursor:pointer;">Delete</button>
                     </form>
@@ -68,7 +68,7 @@ def create_admin_projects_router(engine: Engine, uploads_dir: Path) -> APIRouter
 
         body = f"""
             <div style="margin-bottom:14px;">
-              <a href="/admin/projects/new" style="display:inline-block;padding:10px 12px;border-radius:10px;background:#F5A623;color:#000;font-weight:800;text-decoration:none;">+ Add project</a>
+              <a href="/api/admin/projects/new" style="display:inline-block;padding:10px 12px;border-radius:10px;background:#F5A623;color:#000;font-weight:800;text-decoration:none;">+ Add project</a>
             </div>
 
             <table style="width:100%;border-collapse:collapse;background:#0b0b0b;border:1px solid #222;border-radius:14px;overflow:hidden;">
@@ -89,7 +89,7 @@ def create_admin_projects_router(engine: Engine, uploads_dir: Path) -> APIRouter
         """
         return HTMLResponse(admin_layout("Admin • Projects", body))
 
-    @router.get("/admin/projects/new", response_class=HTMLResponse)
+    @router.get("/api/admin/projects/new", response_class=HTMLResponse)
     def admin_projects_new(request: Request):
         require_login(request)
         categories, technologies, genres = _load_lists()
@@ -97,7 +97,7 @@ def create_admin_projects_router(engine: Engine, uploads_dir: Path) -> APIRouter
             admin_layout(
                 "Admin • New project",
                 project_form_html(
-                    action="/admin/projects/new",
+                    action="/api/admin/projects/new",
                     categories=categories,
                     technologies=technologies,
                     genres=genres,
@@ -106,7 +106,7 @@ def create_admin_projects_router(engine: Engine, uploads_dir: Path) -> APIRouter
             )
         )
 
-    @router.post("/admin/projects/new")
+    @router.post("/api/admin/projects/new")
     async def admin_projects_create(
         request: Request,
         title_ru: str = Form(...),
@@ -168,9 +168,9 @@ def create_admin_projects_router(engine: Engine, uploads_dir: Path) -> APIRouter
                 },
             )
 
-        return RedirectResponse("/admin/projects", status_code=302)
+        return RedirectResponse("/api/admin/projects", status_code=302)
 
-    @router.get("/admin/projects/{project_id}/edit", response_class=HTMLResponse)
+    @router.get("/api/admin/projects/{project_id}/edit", response_class=HTMLResponse)
     def admin_projects_edit(project_id: int, request: Request):
         require_login(request)
 
@@ -198,7 +198,7 @@ def create_admin_projects_router(engine: Engine, uploads_dir: Path) -> APIRouter
         categories, technologies, genres = _load_lists()
 
         html = project_form_html(
-            action=f"/admin/projects/{project_id}/edit",
+            action=f"/api/admin/projects/{project_id}/edit",
             categories=categories,
             technologies=technologies,
             genres=genres,
@@ -220,7 +220,7 @@ def create_admin_projects_router(engine: Engine, uploads_dir: Path) -> APIRouter
         )
         return HTMLResponse(admin_layout(f"Admin • Edit project #{project_id}", html))
 
-    @router.post("/admin/projects/{project_id}/edit")
+    @router.post("/api/admin/projects/{project_id}/edit")
     async def admin_projects_update(
         project_id: int,
         request: Request,
@@ -295,9 +295,9 @@ def create_admin_projects_router(engine: Engine, uploads_dir: Path) -> APIRouter
             if res.rowcount == 0:
                 raise HTTPException(status_code=404, detail="Project not found")
 
-        return RedirectResponse("/admin/projects", status_code=302)
+        return RedirectResponse("/api/admin/projects", status_code=302)
 
-    @router.post("/admin/projects/{project_id}/delete")
+    @router.post("/api/admin/projects/{project_id}/delete")
     def admin_projects_delete(project_id: int, request: Request):
         require_login(request)
 
@@ -314,6 +314,6 @@ def create_admin_projects_router(engine: Engine, uploads_dir: Path) -> APIRouter
         except Exception:
             pass
 
-        return RedirectResponse("/admin/projects", status_code=302)
+        return RedirectResponse("/api/admin/projects", status_code=302)
 
     return router
