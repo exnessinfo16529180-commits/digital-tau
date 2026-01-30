@@ -28,7 +28,7 @@ export type LoginResponse = {
 }
 
 const PUBLIC_API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/+$/, "") || "http://localhost:8000"
+  process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/+$/, "") || ""
 
 // Для server-side запросов (внутри docker-сети) localhost указывает на контейнер frontend,
 // поэтому используем отдельную переменную с дефолтом на сервис `api`.
