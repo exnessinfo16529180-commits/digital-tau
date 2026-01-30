@@ -7,6 +7,7 @@ export type BackendProject = {
   descriptionKz?: string
   descriptionEn?: string
   technologies?: string[] | string
+  genres?: string[] | string
   image?: string
   category?: string
   featured?: boolean

@@ -43,6 +43,7 @@ def create_public_api_router(engine: Engine) -> APIRouter:
                     title_ru, title_kz, title_en,
                     description_ru, description_kz, description_en,
                     technologies,
+                    genres,
                     image,
                     category,
                     featured,
@@ -87,9 +88,53 @@ def create_public_api_router(engine: Engine) -> APIRouter:
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"technologies db error: {e}")
 
+    @router.get("/api/categories")
+    def api_categories():
+        try:
+            with engine.connect() as conn:
+                rows = conn.execute(text("SELECT name FROM categories ORDER BY name ASC")).mappings().all()
+                if rows:
+                    return [r["name"] for r in rows]
+
+                derived = conn.execute(
+                    text(
+                        """
+                        SELECT DISTINCT category AS name
+                        FROM projects
+                        WHERE category IS NOT NULL AND category <> ''
+                        ORDER BY name ASC
+                        """
+                    )
+                ).mappings().all()
+                return [r["name"] for r in derived]
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"categories db error: {e}")
+
+    @router.get("/api/genres")
+    def api_genres():
+        try:
+            with engine.connect() as conn:
+                rows = conn.execute(text("SELECT name FROM genres ORDER BY name ASC")).mappings().all()
+                if rows:
+                    return [r["name"] for r in rows]
+
+                derived = conn.execute(
+                    text(
+                        """
+                        SELECT DISTINCT g AS name
+                        FROM projects
+                        LEFT JOIN LATERAL unnest(genres) AS g ON TRUE
+                        WHERE g IS NOT NULL AND g <> ''
+                        ORDER BY name ASC
+                        """
+                    )
+                ).mappings().all()
+                return [r["name"] for r in derived]
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"genres db error: {e}")
+
     @router.get("/health")
     def health():
         return {"status": "ok"}
 
     return router
-

@@ -7,6 +7,8 @@ from .config import get_settings
 from .db import create_db_engine, ensure_schema
 from .paths import static_dir, templates_dir, uploads_dir
 from .routers.admin.auth import create_admin_auth_router
+from .routers.admin.categories import create_admin_categories_router
+from .routers.admin.genres import create_admin_genres_router
 from .routers.admin.projects import create_admin_projects_router
 from .routers.admin.technologies import create_admin_technologies_router
 from .routers.public.api import create_public_api_router
@@ -44,6 +46,7 @@ def create_app() -> FastAPI:
     app.include_router(create_admin_auth_router(settings))
     app.include_router(create_admin_projects_router(engine, uploads_dir()))
     app.include_router(create_admin_technologies_router(engine))
+    app.include_router(create_admin_categories_router(engine))
+    app.include_router(create_admin_genres_router(engine))
 
     return app
-

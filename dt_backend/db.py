@@ -14,6 +14,27 @@ def ensure_schema(engine: Engine) -> None:
         conn.execute(
             text(
                 """
+                CREATE TABLE IF NOT EXISTS categories (
+                  id SERIAL PRIMARY KEY,
+                  name TEXT NOT NULL UNIQUE
+                );
+                """
+            )
+        )
+
+        conn.execute(
+            text(
+                """
+                CREATE TABLE IF NOT EXISTS genres (
+                  id SERIAL PRIMARY KEY,
+                  name TEXT NOT NULL UNIQUE
+                );
+                """
+            )
+        )
+        conn.execute(
+            text(
+                """
                 CREATE TABLE IF NOT EXISTS projects (
                   id SERIAL PRIMARY KEY,
 
@@ -26,6 +47,7 @@ def ensure_schema(engine: Engine) -> None:
                   description_en TEXT NOT NULL,
 
                   technologies TEXT[] NOT NULL DEFAULT '{}',
+                  genres TEXT[] NOT NULL DEFAULT '{}',
 
                   image TEXT NOT NULL DEFAULT '',
                   category TEXT NOT NULL DEFAULT 'web',
@@ -36,6 +58,9 @@ def ensure_schema(engine: Engine) -> None:
                 """
             )
         )
+
+        # Если projects уже есть (например, после старой версии схемы) — добавим недостающие поля.
+        conn.execute(text("ALTER TABLE projects ADD COLUMN IF NOT EXISTS genres TEXT[] NOT NULL DEFAULT '{}'"))
 
         conn.execute(
             text(
@@ -48,3 +73,13 @@ def ensure_schema(engine: Engine) -> None:
             )
         )
 
+        # Базовые категории (если хотите свои — добавляйте/удаляйте в /admin/categories).
+        conn.execute(
+            text(
+                """
+                INSERT INTO categories (name) VALUES
+                  ('aiml'), ('iot'), ('web'), ('mobile'), ('vrar')
+                ON CONFLICT (name) DO NOTHING;
+                """
+            )
+        )

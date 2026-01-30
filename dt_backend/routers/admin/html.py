@@ -13,7 +13,9 @@ def admin_layout(title: str, body: str) -> str:
             <h2 style="margin:0;">{escape_html(title)}</h2>
             <div style="display:flex;gap:10px;">
               <a href="/admin/projects" style="color:#F5A623;text-decoration:none;">Projects</a>
+              <a href="/admin/categories" style="color:#F5A623;text-decoration:none;">Categories</a>
               <a href="/admin/technologies" style="color:#F5A623;text-decoration:none;">Technologies</a>
+              <a href="/admin/genres" style="color:#F5A623;text-decoration:none;">Genres</a>
               <a href="/admin/logout" style="color:#F5A623;text-decoration:none;">Logout</a>
             </div>
           </div>
@@ -24,7 +26,15 @@ def admin_layout(title: str, body: str) -> str:
     """
 
 
-def project_form_html(action: str, values: Optional[Dict[str, Any]] = None, show_current_image: bool = False) -> str:
+def project_form_html(
+    action: str,
+    values: Optional[Dict[str, Any]] = None,
+    show_current_image: bool = False,
+    *,
+    categories: Optional[list[str]] = None,
+    technologies: Optional[list[str]] = None,
+    genres: Optional[list[str]] = None,
+) -> str:
     v = values or {}
 
     def val(k: str) -> str:
@@ -33,12 +43,33 @@ def project_form_html(action: str, values: Optional[Dict[str, Any]] = None, show
     featured_checked = "checked" if v.get("featured") else ""
     current_img = v.get("image") or ""
 
-    categories = ["web", "mobile", "iot", "aiml", "vrar"]
+    categories_list = categories or ["web", "mobile", "iot", "aiml", "vrar"]
     selected_category = v.get("category") if v.get("category") is not None else ""
+
+    # если категория проекта уже не в списке — покажем её тоже
+    if selected_category and selected_category not in categories_list:
+        categories_list = [selected_category] + categories_list
+
     options_html = "".join(
+        [f'<option value="{escape_html(c)}" {"selected" if selected_category == c else ""}>{escape_html(c)}</option>' for c in categories_list]
+    )
+
+    selected_tech: list[str] = list(v.get("technologies_selected") or [])
+    selected_genres: list[str] = list(v.get("genres_selected") or [])
+
+    tech_list = technologies or []
+    genres_list = genres or []
+
+    tech_options_html = "".join(
         [
-            f'<option value="{c}" {"selected" if selected_category == c else ""}>{c}</option>'
-            for c in categories
+            f'<option value="{escape_html(t)}" {"selected" if t in selected_tech else ""}>{escape_html(t)}</option>'
+            for t in tech_list
+        ]
+    )
+    genres_options_html = "".join(
+        [
+            f'<option value="{escape_html(g)}" {"selected" if g in selected_genres else ""}>{escape_html(g)}</option>'
+            for g in genres_list
         ]
     )
 
@@ -97,9 +128,14 @@ def project_form_html(action: str, values: Optional[Dict[str, Any]] = None, show
 
       <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:end;">
         <div>
-          <label>Technologies (comma-separated)</label><br>
-          <input name="technologies" value="{val("technologies")}"
-                 style="width:100%;padding:10px;border-radius:10px;border:1px solid #333;background:#111;color:#fff;">
+          <label>Technologies</label><br>
+          <select name="technologies" multiple size="8"
+                  style="width:100%;padding:10px;border-radius:10px;border:1px solid #333;background:#111;color:#fff;">
+            {tech_options_html}
+          </select>
+          <div style="margin-top:6px;opacity:.7;font-size:12px;">
+            Tip: hold Ctrl/Cmd to select multiple. Add options in <a style="color:#F5A623" href="/admin/technologies">Technologies</a>.
+          </div>
         </div>
         <div>
           <label>Project URL</label><br>
@@ -115,15 +151,29 @@ def project_form_html(action: str, values: Optional[Dict[str, Any]] = None, show
                   style="width:100%;padding:10px;border-radius:10px;border:1px solid #333;background:#111;color:#fff;">
             {options_html}
           </select>
+          <div style="margin-top:6px;opacity:.7;font-size:12px;">
+            Manage in <a style="color:#F5A623" href="/admin/categories">Categories</a>.
+          </div>
+        </div>
+        <div>
+          <label>Genres</label><br>
+          <select name="genres" multiple size="6"
+                  style="width:100%;padding:10px;border-radius:10px;border:1px solid #333;background:#111;color:#fff;">
+            {genres_options_html}
+          </select>
+          <div style="margin-top:6px;opacity:.7;font-size:12px;">
+            Manage in <a style="color:#F5A623" href="/admin/genres">Genres</a>.
+          </div>
         </div>
         <div>
           <label>Featured</label><br>
           <input type="checkbox" name="featured" value="1" {featured_checked}>
         </div>
-        <div>
-          <label>Image file</label><br>
-          <input type="file" name="image_file" accept="image/*" style="color:#fff;">
-        </div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <label>Image file</label><br>
+        <input type="file" name="image_file" accept="image/*" style="color:#fff;">
       </div>
 
       {img_block}

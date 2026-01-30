@@ -14,6 +14,7 @@ type BackendProject = {
   descriptionKz?: string
   descriptionEn?: string
   technologies?: string[] | string
+  genres?: string[] | string
   image?: string
   category?: string
   featured?: boolean
@@ -27,10 +28,16 @@ const API_BASE =
     "http://localhost:8000"
   ).replace(/\/+$/, "")
 
-function normalizeTechToString(tech?: string[] | string) {
-  if (!tech) return ""
-  if (Array.isArray(tech)) return tech.join(", ")
-  return String(tech)
+function normalizeToArray(input?: string[] | string) {
+  if (!input) return []
+  if (Array.isArray(input)) return input.map((x) => String(x).trim()).filter(Boolean)
+  const raw = String(input).trim()
+  if (!raw) return []
+  const s = raw.startsWith("{") && raw.endsWith("}") ? raw.slice(1, -1) : raw
+  return s
+    .split(",")
+    .map((x) => x.trim())
+    .filter(Boolean)
 }
 
 function toBoolString(v: boolean) {
@@ -59,12 +66,18 @@ export default function AdminProjectsPage() {
   const [descriptionRu, setDescriptionRu] = useState("")
   const [descriptionKz, setDescriptionKz] = useState("")
   const [descriptionEn, setDescriptionEn] = useState("")
-  const [technologies, setTechnologies] = useState("") // строка "a,b,c"
+  const [selectedTechnologies, setSelectedTechnologies] = useState<string[]>([])
+  const [selectedGenres, setSelectedGenres] = useState<string[]>([])
   const [category, setCategory] = useState("web")
   const [featured, setFeatured] = useState(false)
   const [projectUrl, setProjectUrl] = useState("")
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [submitting, setSubmitting] = useState(false)
+
+  // lookups
+  const [availableCategories, setAvailableCategories] = useState<string[]>([])
+  const [availableTechnologies, setAvailableTechnologies] = useState<string[]>([])
+  const [availableGenres, setAvailableGenres] = useState<string[]>([])
 
   async function loadProjects() {
     setLoading(true)
@@ -83,8 +96,32 @@ export default function AdminProjectsPage() {
     }
   }
 
+  async function loadLookups() {
+    try {
+      const [catsRes, techRes, genresRes] = await Promise.all([
+        fetch(`${API_BASE}/api/categories`, { cache: "no-store" }),
+        fetch(`${API_BASE}/api/technologies`, { cache: "no-store" }),
+        fetch(`${API_BASE}/api/genres`, { cache: "no-store" }),
+      ])
+
+      const cats = catsRes.ok ? ((await catsRes.json()) as string[]) : []
+      const techs = techRes.ok ? ((await techRes.json()) as string[]) : []
+      const gens = genresRes.ok ? ((await genresRes.json()) as string[]) : []
+
+      setAvailableCategories(Array.isArray(cats) ? cats : [])
+      setAvailableTechnologies(Array.isArray(techs) ? techs : [])
+      setAvailableGenres(Array.isArray(gens) ? gens : [])
+    } catch {
+      // optional (admin can still type category manually / keep defaults)
+      setAvailableCategories([])
+      setAvailableTechnologies([])
+      setAvailableGenres([])
+    }
+  }
+
   useEffect(() => {
     loadProjects()
+    loadLookups()
   }, [])
 
   function openAdd() {
@@ -95,7 +132,8 @@ export default function AdminProjectsPage() {
     setDescriptionRu("")
     setDescriptionKz("")
     setDescriptionEn("")
-    setTechnologies("")
+    setSelectedTechnologies([])
+    setSelectedGenres([])
     setCategory("web")
     setFeatured(false)
     setProjectUrl("")
@@ -111,8 +149,9 @@ export default function AdminProjectsPage() {
     setDescriptionRu(p.descriptionRu || "")
     setDescriptionKz(p.descriptionKz || "")
     setDescriptionEn(p.descriptionEn || "")
-    setTechnologies(normalizeTechToString(p.technologies))
-    setCategory((p.category || "web").toLowerCase())
+    setSelectedTechnologies(normalizeToArray(p.technologies))
+    setSelectedGenres(normalizeToArray(p.genres))
+    setCategory(p.category || "web")
     setFeatured(Boolean(p.featured))
     setProjectUrl(p.projectUrl || (p as any).project_url || "")
     setImageFile(null) // при редактировании файл выбирается заново (если надо)
@@ -130,7 +169,8 @@ export default function AdminProjectsPage() {
       fd.append("description_ru", descriptionRu)
       fd.append("description_kz", descriptionKz)
       fd.append("description_en", descriptionEn)
-      fd.append("technologies", technologies) // бек ждёт string
+      fd.append("technologies", selectedTechnologies.join(", "))
+      fd.append("genres", selectedGenres.join(", "))
       fd.append("category", category)
       fd.append("featured", toBoolString(featured))
       fd.append("project_url", projectUrl)
@@ -315,11 +355,20 @@ export default function AdminProjectsPage() {
             </div>
 
             <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field
+              <MultiSelect
                 label={t("fieldTech")}
-                value={technologies}
-                onChange={setTechnologies}
-                placeholder="FastAPI, PostgreSQL, Docker"
+                options={availableTechnologies}
+                selected={selectedTechnologies}
+                onChange={setSelectedTechnologies}
+                emptyHint='Добавь технологии в "/admin/technologies"'
+              />
+
+              <MultiSelect
+                label="Genres"
+                options={availableGenres}
+                selected={selectedGenres}
+                onChange={setSelectedGenres}
+                emptyHint='Добавь жанры в "/admin/genres"'
               />
 
               <Field
@@ -337,7 +386,10 @@ export default function AdminProjectsPage() {
                   className="w-full px-4 py-3 rounded-xl glass border border-white/10 text-white
                              focus:outline-none focus:border-white/30 transition-colors bg-transparent"
                 >
-                  {["aiml", "iot", "web", "mobile", "vrar"].map((c) => (
+                  {(availableCategories.length
+                    ? availableCategories
+                    : ["aiml", "iot", "web", "mobile", "vrar"]
+                  ).map((c) => (
                     <option key={c} value={c} className="bg-[#1a1a1a]">
                       {c}
                     </option>
@@ -396,6 +448,84 @@ export default function AdminProjectsPage() {
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+function MultiSelect({
+  label,
+  options,
+  selected,
+  onChange,
+  emptyHint,
+}: {
+  label: string
+  options: string[]
+  selected: string[]
+  onChange: (v: string[]) => void
+  emptyHint?: string
+}) {
+  const hasOptions = Array.isArray(options) && options.length > 0
+
+  function toggle(name: string) {
+    const clean = String(name).trim()
+    if (!clean) return
+    const set = new Set(selected)
+    if (set.has(clean)) set.delete(clean)
+    else set.add(clean)
+    onChange(Array.from(set))
+  }
+
+  return (
+    <div>
+      <label className="block text-sm text-muted-foreground mb-2">{label}</label>
+      <div className="w-full px-4 py-3 rounded-xl glass border border-white/10 text-white bg-transparent">
+        {!hasOptions ? (
+          <div className="text-xs text-muted-foreground">{emptyHint || "Нет данных"}</div>
+        ) : (
+          <div className="flex flex-wrap gap-2 max-h-32 overflow-auto">
+            {options.map((opt) => {
+              const active = selected.includes(opt)
+              return (
+                <button
+                  key={opt}
+                  type="button"
+                  onClick={() => toggle(opt)}
+                  className={cn(
+                    "px-3 py-1 rounded-full text-sm border transition-colors",
+                    active
+                      ? "border-pink-500/60 bg-pink-500/20 text-white"
+                      : "border-white/10 hover:border-white/20 text-muted-foreground hover:text-white"
+                  )}
+                >
+                  {opt}
+                </button>
+              )
+            })}
+          </div>
+        )}
+
+        {selected.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-2">
+            {selected.map((s) => (
+              <span
+                key={s}
+                className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs border border-white/10 bg-white/5"
+              >
+                {s}
+                <button
+                  type="button"
+                  onClick={() => toggle(s)}
+                  className="text-muted-foreground hover:text-white"
+                  aria-label={`remove ${s}`}
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

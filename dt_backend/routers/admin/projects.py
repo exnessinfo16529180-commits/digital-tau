@@ -16,6 +16,19 @@ from ...utils import escape_html, parse_tech_input, safe_filename
 def create_admin_projects_router(engine: Engine, uploads_dir: Path) -> APIRouter:
     router = APIRouter(tags=["admin-projects"])
 
+    def _truthy(value: Optional[str]) -> bool:
+        if value is None:
+            return False
+        v = str(value).strip().lower()
+        return v in ("1", "true", "on", "yes")
+
+    def _load_lists() -> tuple[list[str], list[str], list[str]]:
+        with engine.connect() as conn:
+            categories = conn.execute(text("SELECT name FROM categories ORDER BY name ASC")).scalars().all()
+            technologies = conn.execute(text("SELECT name FROM technologies ORDER BY name ASC")).scalars().all()
+            genres = conn.execute(text("SELECT name FROM genres ORDER BY name ASC")).scalars().all()
+        return list(categories or []), list(technologies or []), list(genres or [])
+
     @router.get("/admin/projects", response_class=HTMLResponse)
     def admin_projects(request: Request):
         require_login(request)
@@ -79,7 +92,19 @@ def create_admin_projects_router(engine: Engine, uploads_dir: Path) -> APIRouter
     @router.get("/admin/projects/new", response_class=HTMLResponse)
     def admin_projects_new(request: Request):
         require_login(request)
-        return HTMLResponse(admin_layout("Admin • New project", project_form_html(action="/admin/projects/new")))
+        categories, technologies, genres = _load_lists()
+        return HTMLResponse(
+            admin_layout(
+                "Admin • New project",
+                project_form_html(
+                    action="/admin/projects/new",
+                    categories=categories,
+                    technologies=technologies,
+                    genres=genres,
+                    values={"technologies_selected": [], "genres_selected": []},
+                ),
+            )
+        )
 
     @router.post("/admin/projects/new")
     async def admin_projects_create(
@@ -90,7 +115,8 @@ def create_admin_projects_router(engine: Engine, uploads_dir: Path) -> APIRouter
         description_ru: str = Form(...),
         description_kz: str = Form(...),
         description_en: str = Form(...),
-        technologies: str = Form(""),
+        technologies: list[str] = Form([]),
+        genres: list[str] = Form([]),
         category: str = Form("web"),
         featured: Optional[str] = Form(None),
         project_url: str = Form(""),
@@ -98,7 +124,7 @@ def create_admin_projects_router(engine: Engine, uploads_dir: Path) -> APIRouter
     ):
         require_login(request)
 
-        featured_bool = bool(featured)
+        featured_bool = _truthy(featured)
 
         image_path = ""
         if image_file and image_file.filename:
@@ -109,6 +135,7 @@ def create_admin_projects_router(engine: Engine, uploads_dir: Path) -> APIRouter
             image_path = f"/static/uploads/{fname}"
 
         tech_list = parse_tech_input(technologies)
+        genres_list = parse_tech_input(genres)
 
         with engine.begin() as conn:
             conn.execute(
@@ -117,11 +144,11 @@ def create_admin_projects_router(engine: Engine, uploads_dir: Path) -> APIRouter
                     INSERT INTO projects (
                         title_ru, title_kz, title_en,
                         description_ru, description_kz, description_en,
-                        technologies, image, category, featured, project_url
+                        technologies, genres, image, category, featured, project_url
                     ) VALUES (
                         :title_ru, :title_kz, :title_en,
                         :description_ru, :description_kz, :description_en,
-                        :technologies, :image, :category, :featured, :project_url
+                        :technologies, :genres, :image, :category, :featured, :project_url
                     )
                     """
                 ),
@@ -133,6 +160,7 @@ def create_admin_projects_router(engine: Engine, uploads_dir: Path) -> APIRouter
                     "description_kz": description_kz,
                     "description_en": description_en,
                     "technologies": tech_list,
+                    "genres": genres_list,
                     "image": image_path,
                     "category": category,
                     "featured": featured_bool,
@@ -154,7 +182,7 @@ def create_admin_projects_router(engine: Engine, uploads_dir: Path) -> APIRouter
                         id,
                         title_ru, title_kz, title_en,
                         description_ru, description_kz, description_en,
-                        technologies, image, category, featured, project_url
+                        technologies, genres, image, category, featured, project_url
                     FROM projects
                     WHERE id = :id
                     """
@@ -165,11 +193,15 @@ def create_admin_projects_router(engine: Engine, uploads_dir: Path) -> APIRouter
         if not row:
             raise HTTPException(status_code=404, detail="Project not found")
 
-        tech = row.get("technologies") or []
-        tech_str = ", ".join([str(x) for x in tech]) if isinstance(tech, list) else str(tech)
+        tech_selected = parse_tech_input(row.get("technologies"))
+        genres_selected = parse_tech_input(row.get("genres"))
+        categories, technologies, genres = _load_lists()
 
         html = project_form_html(
             action=f"/admin/projects/{project_id}/edit",
+            categories=categories,
+            technologies=technologies,
+            genres=genres,
             values={
                 "title_ru": row.get("title_ru", ""),
                 "title_kz": row.get("title_kz", ""),
@@ -177,7 +209,8 @@ def create_admin_projects_router(engine: Engine, uploads_dir: Path) -> APIRouter
                 "description_ru": row.get("description_ru", ""),
                 "description_kz": row.get("description_kz", ""),
                 "description_en": row.get("description_en", ""),
-                "technologies": tech_str,
+                "technologies_selected": tech_selected,
+                "genres_selected": genres_selected,
                 "category": row.get("category", "web"),
                 "featured": bool(row.get("featured")),
                 "project_url": row.get("project_url", "") or "",
@@ -197,7 +230,8 @@ def create_admin_projects_router(engine: Engine, uploads_dir: Path) -> APIRouter
         description_ru: str = Form(...),
         description_kz: str = Form(...),
         description_en: str = Form(...),
-        technologies: str = Form(""),
+        technologies: list[str] = Form([]),
+        genres: list[str] = Form([]),
         category: str = Form("web"),
         featured: Optional[str] = Form(None),
         project_url: str = Form(""),
@@ -205,7 +239,7 @@ def create_admin_projects_router(engine: Engine, uploads_dir: Path) -> APIRouter
     ):
         require_login(request)
 
-        featured_bool = bool(featured)
+        featured_bool = _truthy(featured)
 
         with engine.connect() as conn:
             old_img = conn.execute(text("SELECT image FROM projects WHERE id=:id"), {"id": project_id}).scalar()
@@ -219,6 +253,7 @@ def create_admin_projects_router(engine: Engine, uploads_dir: Path) -> APIRouter
             image_path = f"/static/uploads/{fname}"
 
         tech_list = parse_tech_input(technologies)
+        genres_list = parse_tech_input(genres)
 
         with engine.begin() as conn:
             res = conn.execute(
@@ -233,6 +268,7 @@ def create_admin_projects_router(engine: Engine, uploads_dir: Path) -> APIRouter
                         description_kz=:description_kz,
                         description_en=:description_en,
                         technologies=:technologies,
+                        genres=:genres,
                         image=:image,
                         category=:category,
                         featured=:featured,
@@ -249,6 +285,7 @@ def create_admin_projects_router(engine: Engine, uploads_dir: Path) -> APIRouter
                     "description_kz": description_kz,
                     "description_en": description_en,
                     "technologies": tech_list,
+                    "genres": genres_list,
                     "image": image_path,
                     "category": category,
                     "featured": featured_bool,
@@ -280,4 +317,3 @@ def create_admin_projects_router(engine: Engine, uploads_dir: Path) -> APIRouter
         return RedirectResponse("/admin/projects", status_code=302)
 
     return router
-
