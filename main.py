@@ -658,7 +658,11 @@ def admin_projects_delete(project_id: int, request: Request):
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=[
+        o.strip()
+        for o in (os.getenv("CORS_ORIGINS") or "http://localhost:3000,http://localhost:3001").split(",")
+        if o.strip()
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -666,4 +670,5 @@ app.add_middleware(
 
 @app.get("/")
 def root():
-    return RedirectResponse("http://localhost:3000", status_code=302)
+    frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000")
+    return RedirectResponse(frontend_url, status_code=302)

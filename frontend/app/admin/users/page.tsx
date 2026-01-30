@@ -13,6 +13,13 @@ const users = [
 export default function AdminUsersPage() {
   const { t } = useI18n()
 
+  const roleLabel = (role: string) => {
+    if (role === "Admin") return t("admin")
+    if (role === "Faculty") return t("faculty")
+    if (role === "Student") return t("student")
+    return role
+  }
+
   return (
     <div className="p-6 lg:p-8">
       {/* Page Header */}
@@ -29,7 +36,7 @@ export default function AdminUsersPage() {
             </div>
             <div>
               <p className="text-2xl font-bold text-white">{users.length}</p>
-              <p className="text-muted-foreground">Total Users</p>
+              <p className="text-muted-foreground">{t("totalUsers")}</p>
             </div>
           </div>
         </div>
@@ -40,7 +47,7 @@ export default function AdminUsersPage() {
             </div>
             <div>
               <p className="text-2xl font-bold text-white">1</p>
-              <p className="text-muted-foreground">Admins</p>
+              <p className="text-muted-foreground">{t("admins")}</p>
             </div>
           </div>
         </div>
@@ -51,7 +58,7 @@ export default function AdminUsersPage() {
             </div>
             <div>
               <p className="text-2xl font-bold text-white">{users.length}</p>
-              <p className="text-muted-foreground">Active</p>
+              <p className="text-muted-foreground">{t("active")}</p>
             </div>
           </div>
         </div>
@@ -63,9 +70,9 @@ export default function AdminUsersPage() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-white/10">
-                <th className="text-left p-4 text-muted-foreground font-medium">Name</th>
-                <th className="text-left p-4 text-muted-foreground font-medium">Email</th>
-                <th className="text-left p-4 text-muted-foreground font-medium">Role</th>
+                <th className="text-left p-4 text-muted-foreground font-medium">{t("name")}</th>
+                <th className="text-left p-4 text-muted-foreground font-medium">{t("email")}</th>
+                <th className="text-left p-4 text-muted-foreground font-medium">{t("role")}</th>
                 <th className="text-left p-4 text-muted-foreground font-medium">{t("status")}</th>
               </tr>
             </thead>
@@ -87,12 +94,12 @@ export default function AdminUsersPage() {
                       user.role === "Faculty" ? "bg-orange-500/20 text-orange-400" :
                       "bg-blue-500/20 text-blue-400"
                     }`}>
-                      {user.role}
+                      {roleLabel(user.role)}
                     </span>
                   </td>
                   <td className="p-4">
                     <span className="px-3 py-1 text-xs font-medium rounded-full bg-green-500/20 text-green-400">
-                      {user.status}
+                      {t("active")}
                     </span>
                   </td>
                 </tr>

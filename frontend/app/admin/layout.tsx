@@ -120,6 +120,7 @@ function AdminSidebar() {
 
 function AdminProtectedContent({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth()
+  const { t } = useI18n()
   const router = useRouter()
   const [showLoginModal, setShowLoginModal] = useState(false)
 
@@ -144,7 +145,7 @@ function AdminProtectedContent({ children }: { children: React.ReactNode }) {
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <Loader2 size={40} className="animate-spin text-[#E91E63]" />
-          <p className="text-muted-foreground">Loading...</p>
+          <p className="text-muted-foreground">{t("loading")}</p>
         </div>
       </div>
     )

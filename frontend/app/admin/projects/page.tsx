@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { Plus, Pencil, Trash2, X } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useI18n } from "@/lib/i18n"
 
 type BackendProject = {
   id: string | number
@@ -41,6 +42,8 @@ function pickTitle(p: BackendProject) {
 }
 
 export default function AdminProjectsPage() {
+  const { t } = useI18n()
+
   const [items, setItems] = useState<BackendProject[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string>("")
@@ -162,7 +165,7 @@ export default function AdminProjectsPage() {
   }
 
   async function deleteProject(p: BackendProject) {
-    const ok = confirm(`Удалить проект "${pickTitle(p)}"?`)
+    const ok = confirm(t("confirmDeleteProject", { title: pickTitle(p) }))
     if (!ok) return
 
     setError("")
@@ -186,7 +189,7 @@ export default function AdminProjectsPage() {
   return (
     <div className="p-6 lg:p-8">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold gradient-text">Manage Projects</h1>
+        <h1 className="text-3xl font-bold gradient-text">{t("manageProjects")}</h1>
 
         <button
           onClick={openAdd}
@@ -194,7 +197,7 @@ export default function AdminProjectsPage() {
                      transition-all duration-300 hover:scale-105 glow-hover"
         >
           <Plus size={20} />
-          Add project
+          {t("addProject")}
         </button>
       </div>
 
@@ -210,10 +213,10 @@ export default function AdminProjectsPage() {
             <thead>
               <tr className="border-b border-white/10">
                 <th className="text-left p-4 text-muted-foreground font-medium">ID</th>
-                <th className="text-left p-4 text-muted-foreground font-medium">Title</th>
-                <th className="text-left p-4 text-muted-foreground font-medium">Category</th>
-                <th className="text-left p-4 text-muted-foreground font-medium">Featured</th>
-                <th className="text-left p-4 text-muted-foreground font-medium">Actions</th>
+                <th className="text-left p-4 text-muted-foreground font-medium">{t("title")}</th>
+                <th className="text-left p-4 text-muted-foreground font-medium">{t("category")}</th>
+                <th className="text-left p-4 text-muted-foreground font-medium">{t("featured")}</th>
+                <th className="text-left p-4 text-muted-foreground font-medium">{t("actions")}</th>
               </tr>
             </thead>
 
@@ -221,13 +224,13 @@ export default function AdminProjectsPage() {
               {loading ? (
                 <tr>
                   <td className="p-4 text-muted-foreground" colSpan={5}>
-                    Loading…
+                    {t("loading")}
                   </td>
                 </tr>
               ) : rows.length === 0 ? (
                 <tr>
                   <td className="p-4 text-muted-foreground" colSpan={5}>
-                    No projects.
+                    {t("noProjectsTable")}
                   </td>
                 </tr>
               ) : (
@@ -263,14 +266,14 @@ export default function AdminProjectsPage() {
                         <button
                           onClick={() => openEdit(p)}
                           className="p-2 rounded-lg hover:bg-white/10 text-muted-foreground hover:text-white transition-colors"
-                          title="Edit"
+                          title={t("edit")}
                         >
                           <Pencil size={18} />
                         </button>
                         <button
                           onClick={() => deleteProject(p)}
                           className="p-2 rounded-lg hover:bg-red-500/20 text-muted-foreground hover:text-red-400 transition-colors"
-                          title="Delete"
+                          title={t("delete")}
                         >
                           <Trash2 size={18} />
                         </button>
@@ -291,7 +294,7 @@ export default function AdminProjectsPage() {
           <div className="relative w-full max-w-2xl glass border border-white/10 rounded-2xl p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-white">
-                {editing ? "Edit Project" : "Add Project"}
+                {editing ? t("editProject") : t("addProject")}
               </h2>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -302,32 +305,32 @@ export default function AdminProjectsPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Field label="title_ru" value={titleRu} onChange={setTitleRu} />
-              <Field label="title_kz" value={titleKz} onChange={setTitleKz} />
-              <Field label="title_en" value={titleEn} onChange={setTitleEn} />
+              <Field label={t("fieldTitleRu")} value={titleRu} onChange={setTitleRu} />
+              <Field label={t("fieldTitleKz")} value={titleKz} onChange={setTitleKz} />
+              <Field label={t("fieldTitleEn")} value={titleEn} onChange={setTitleEn} />
 
-              <Area label="description_ru" value={descriptionRu} onChange={setDescriptionRu} />
-              <Area label="description_kz" value={descriptionKz} onChange={setDescriptionKz} />
-              <Area label="description_en" value={descriptionEn} onChange={setDescriptionEn} />
+              <Area label={t("fieldDescRu")} value={descriptionRu} onChange={setDescriptionRu} />
+              <Area label={t("fieldDescKz")} value={descriptionKz} onChange={setDescriptionKz} />
+              <Area label={t("fieldDescEn")} value={descriptionEn} onChange={setDescriptionEn} />
             </div>
 
             <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field
-                label="technologies (string)"
+                label={t("fieldTech")}
                 value={technologies}
                 onChange={setTechnologies}
                 placeholder="FastAPI, PostgreSQL, Docker"
               />
 
               <Field
-                label="project_url"
+                label={t("fieldProjectUrl")}
                 value={projectUrl}
                 onChange={setProjectUrl}
                 placeholder="https://..."
               />
 
               <div>
-                <label className="block text-sm text-muted-foreground mb-2">category</label>
+                <label className="block text-sm text-muted-foreground mb-2">{t("category")}</label>
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
@@ -343,7 +346,7 @@ export default function AdminProjectsPage() {
               </div>
 
               <div>
-                <label className="block text-sm text-muted-foreground mb-2">featured</label>
+                <label className="block text-sm text-muted-foreground mb-2">{t("featured")}</label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
@@ -356,7 +359,7 @@ export default function AdminProjectsPage() {
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-sm text-muted-foreground mb-2">image_file</label>
+                <label className="block text-sm text-muted-foreground mb-2">{t("fieldImage")}</label>
                 <input
                   type="file"
                   accept="image/*"
@@ -365,7 +368,7 @@ export default function AdminProjectsPage() {
                              focus:outline-none focus:border-white/30 transition-colors bg-transparent"
                 />
                 <p className="text-xs text-muted-foreground mt-2">
-                  Если не выбрать файл при Edit — картинка останется прежней (обычно так делают).
+                  {t("keepImageHint")}
                 </p>
               </div>
             </div>
@@ -378,7 +381,7 @@ export default function AdminProjectsPage() {
                            hover:bg-white/5 transition-colors"
                 disabled={submitting}
               >
-                Cancel
+                {t("cancel")}
               </button>
               <button
                 type="button"
@@ -387,7 +390,7 @@ export default function AdminProjectsPage() {
                            hover:scale-105 transition-all duration-300 disabled:opacity-60 disabled:hover:scale-100"
                 disabled={submitting}
               >
-                {submitting ? "Saving…" : "Submit"}
+                {submitting ? t("saving") : t("submit")}
               </button>
             </div>
           </div>

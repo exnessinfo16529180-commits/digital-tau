@@ -74,8 +74,8 @@ function toUiProject(p: BackendProject, lang: "ru" | "kz" | "en"): UiProject {
 // -------------------------
 
 export default function ProjectsPage() {
-  const { t, lang: i18nLang } = useI18n()
-  const lang: "ru" | "kz" | "en" = i18nLang as "ru" | "kz" | "en" || "en"
+  const { t, language } = useI18n()
+  const lang: "ru" | "kz" | "en" = (language as "ru" | "kz" | "en") || "en"
 
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<UiCategory | "all">("all")
@@ -97,7 +97,7 @@ export default function ProjectsPage() {
       } catch (e: any) {
         if (!alive) return
         setItems([])
-        setError(e?.message || "Failed to load projects")
+        setError(e?.message || t("failedToLoadProjects"))
       } finally {
         if (alive) setLoading(false)
       }
@@ -201,14 +201,14 @@ export default function ProjectsPage() {
 
         {/* Loading / Error */}
         {loading && (
-          <div className="text-center py-10 text-muted-foreground">Loading…</div>
+          <div className="text-center py-10 text-muted-foreground">{t("loading")}</div>
         )}
 
         {!loading && error && (
           <div className="text-center py-10 text-red-400">
             {error}
             <div className="text-sm text-muted-foreground mt-2">
-              Проверь: NEXT_PUBLIC_API_BASE_URL и что бэк реально доступен на 8000.
+              {t("checkApi", { port: 8000 })}
             </div>
           </div>
         )}
@@ -226,7 +226,7 @@ export default function ProjectsPage() {
             {filteredProjects.length === 0 && (
               <div className="text-center py-20">
                 <p className="text-muted-foreground text-lg">
-                  No projects found matching your criteria.
+                  {t("noProjectsFound")}
                 </p>
               </div>
             )}

@@ -63,13 +63,8 @@ function pickTextByLang(p: BackendProject, lang: "ru" | "kz" | "en") {
 }
 
 export function ProjectsFromApi({ onlyFeatured = false }: { onlyFeatured?: boolean }) {
-  const i18n = useI18n() as any
-
-  // ВАЖНО: lang должен быть реактивным значением из i18n.
-  // В большинстве реализаций это i18n.lang или i18n.locale.
-  // Берём безопасно:
-  const lang: "ru" | "kz" | "en" =
-    (i18n?.lang || i18n?.locale || "en") as "ru" | "kz" | "en"
+  const { t, language } = useI18n()
+  const lang: "ru" | "kz" | "en" = (language as "ru" | "kz" | "en") || "en"
 
   const [items, setItems] = useState<BackendProject[]>([])
   const [loading, setLoading] = useState(true)
@@ -116,7 +111,7 @@ export function ProjectsFromApi({ onlyFeatured = false }: { onlyFeatured?: boole
     })
   }, [items, onlyFeatured, lang])
 
-  if (loading) return <div className="text-center text-muted-foreground py-10">Loading…</div>
+  if (loading) return <div className="text-center text-muted-foreground py-10">{t("loading")}</div>
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">

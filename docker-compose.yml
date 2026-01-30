@@ -37,6 +37,8 @@ services:
     container_name: dt_frontend
     depends_on:
       - api
+    environment:
+      API_INTERNAL_BASE_URL: http://api:8000
     ports:
       - "${FRONTEND_PORT}:3000"
     restart: unless-stopped

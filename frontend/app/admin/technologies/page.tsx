@@ -17,7 +17,7 @@ export default function AdminTechnologiesPage() {
                      transition-all duration-300 hover:scale-105 glow-hover"
         >
           <Plus size={20} />
-          Add Technology
+          {t("addTechnology")}
         </button>
       </div>
 
@@ -45,7 +45,7 @@ export default function AdminTechnologiesPage() {
               </div>
             </div>
             <h3 className="font-semibold text-white">{tech.name}</h3>
-            <p className="text-sm text-muted-foreground">Used in 5 projects</p>
+            <p className="text-sm text-muted-foreground">{t("usedInProjects", { count: 5 })}</p>
           </div>
         ))}
       </div>

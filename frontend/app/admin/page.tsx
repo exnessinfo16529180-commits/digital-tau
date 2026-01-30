@@ -75,17 +75,17 @@ export default function AdminDashboard() {
   const totalProjects = projects.length || 0
 
   const recentActivity = useMemo(() => {
-    // У нас с бэка нет “логов”, поэтому показываем последние проекты (как “Recent”)
+    // У нас с бэка нет логов, поэтому показываем последние проекты как "Recent"
     const last = [...projects].slice(-4).reverse()
     return last.map((p) => ({
       title: pickTitle(p),
-      action: p.featured ? "Featured project" : "Project updated/added",
+      action: p.featured ? t("featuredProject") : t("projectUpdated"),
       time: "—",
     }))
-  }, [projects])
+  }, [projects, t])
 
   if (loading) {
-    return <div className="p-6 lg:p-8 text-muted-foreground">Loading…</div>
+    return <div className="p-6 lg:p-8 text-muted-foreground">{t("loading")}</div>
   }
 
   return (
@@ -126,7 +126,7 @@ export default function AdminDashboard() {
           </h2>
 
           {recentActivity.length === 0 ? (
-            <div className="text-muted-foreground">No activity yet.</div>
+            <div className="text-muted-foreground">{t("noActivityYet")}</div>
           ) : (
             <div className="space-y-4">
               {recentActivity.map((activity, index) => (
@@ -147,7 +147,7 @@ export default function AdminDashboard() {
 
         {/* Quick Stats */}
         <div className="glass border border-white/10 rounded-2xl p-6">
-          <h2 className="text-xl font-bold text-white mb-4">Projects by Category</h2>
+          <h2 className="text-xl font-bold text-white mb-4">{t("projectsByCategory")}</h2>
 
           <div className="space-y-4">
             {categories.map((category) => {
@@ -171,7 +171,7 @@ export default function AdminDashboard() {
           </div>
 
           {totalProjects === 0 && (
-            <div className="text-muted-foreground mt-4">No projects in DB yet.</div>
+            <div className="text-muted-foreground mt-4">{t("noProjectsInDb")}</div>
           )}
         </div>
       </div>

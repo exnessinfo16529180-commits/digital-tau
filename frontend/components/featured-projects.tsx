@@ -51,7 +51,7 @@ type Props = {
 export function FeaturedProjects({ items = [] }: Props) {
   const i18n = useI18n()
   const t = i18n.t
-  const lang = (i18n as any).lang ?? "ru"
+  const lang = i18n.language
 
   const scrollRef = useRef<HTMLDivElement>(null)
   const [currentIndex, setCurrentIndex] = useState(0)

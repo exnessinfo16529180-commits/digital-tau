@@ -26,8 +26,15 @@ export type LoginResponse = {
   type?: string
 }
 
-const API_BASE =
+const PUBLIC_API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/+$/, "") || "http://localhost:8000"
+
+// Для server-side запросов (внутри docker-сети) localhost указывает на контейнер frontend,
+// поэтому используем отдельную переменную с дефолтом на сервис `api`.
+const INTERNAL_API_BASE =
+  process.env.API_INTERNAL_BASE_URL?.replace(/\/+$/, "") || "http://api:8000"
+
+const API_BASE = typeof window === "undefined" ? INTERNAL_API_BASE : PUBLIC_API_BASE
 
 // ---- token helpers (простая схема) ----
 const TOKEN_KEY = "dt_token"
