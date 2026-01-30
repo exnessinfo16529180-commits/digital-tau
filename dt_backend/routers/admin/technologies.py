@@ -11,6 +11,15 @@ from ...utils import escape_html
 def create_admin_technologies_router(engine: Engine) -> APIRouter:
     router = APIRouter(tags=["admin-technologies"])
 
+    @router.get("/api/admin/technologies/json")
+    def admin_technologies_json(request: Request):
+        require_login(request)
+
+        with engine.connect() as conn:
+            rows = conn.execute(text("SELECT id, name FROM technologies ORDER BY name ASC")).mappings().all()
+
+        return [{"id": int(r["id"]), "name": r["name"]} for r in rows]
+
     @router.get("/api/admin/technologies", response_class=HTMLResponse)
     def admin_technologies(request: Request):
         require_login(request)
@@ -76,6 +85,22 @@ def create_admin_technologies_router(engine: Engine) -> APIRouter:
             conn.execute(
                 text("INSERT INTO technologies (name) VALUES (:name) ON CONFLICT (name) DO NOTHING"),
                 {"name": clean},
+            )
+
+        return RedirectResponse("/api/admin/technologies", status_code=302)
+
+    @router.post("/api/admin/technologies/{tech_id}/edit")
+    def admin_technologies_edit(tech_id: int, request: Request, name: str = Form(...)):
+        require_login(request)
+
+        clean = (name or "").strip()
+        if not clean:
+            return RedirectResponse("/api/admin/technologies", status_code=302)
+
+        with engine.begin() as conn:
+            conn.execute(
+                text("UPDATE technologies SET name = :name WHERE id = :id"),
+                {"id": tech_id, "name": clean},
             )
 
         return RedirectResponse("/api/admin/technologies", status_code=302)

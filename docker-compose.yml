@@ -24,6 +24,8 @@ services:
       - .env
     environment:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+    ports:
+      - "${API_PORT}:8000"
     restart: unless-stopped
 
   frontend:
@@ -37,6 +39,8 @@ services:
       - api
     environment:
       API_INTERNAL_BASE_URL: http://api:8000
+    ports:
+      - "${FRONTEND_PORT}:3000"
     restart: unless-stopped
 
   nginx:

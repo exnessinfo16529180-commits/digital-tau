@@ -1,9 +1,48 @@
 "use client"
 
+import { useEffect, useMemo, useState } from "react"
 import { useI18n } from "@/lib/i18n"
-import { technologies } from "@/lib/data"
+import { getTechnologies } from "@/lib/api"
 import { ArrowRight } from "lucide-react"
 import { JSX } from "react/jsx-runtime"
+
+const API_BASE =
+  (process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_URL || "").replace(/\/+$/, "")
+
+function hashToColorHex(input: string) {
+  let hash = 0
+  for (let i = 0; i < input.length; i++) {
+    hash = (hash * 31 + input.charCodeAt(i)) >>> 0
+  }
+  const hue = hash % 360
+  const sat = 70
+  const light = 55
+
+  // hsl -> rgb -> hex
+  const s = sat / 100
+  const l = light / 100
+  const c = (1 - Math.abs(2 * l - 1)) * s
+  const x = c * (1 - Math.abs(((hue / 60) % 2) - 1))
+  const m = l - c / 2
+
+  let r = 0, g = 0, b = 0
+  if (hue < 60) [r, g, b] = [c, x, 0]
+  else if (hue < 120) [r, g, b] = [x, c, 0]
+  else if (hue < 180) [r, g, b] = [0, c, x]
+  else if (hue < 240) [r, g, b] = [0, x, c]
+  else if (hue < 300) [r, g, b] = [x, 0, c]
+  else [r, g, b] = [c, 0, x]
+
+  const toHex = (n: number) => Math.round((n + m) * 255).toString(16).padStart(2, "0")
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`
+}
+
+function normalizeTechKey(name: string) {
+  return String(name || "")
+    .toLowerCase()
+    .replace(/\s+/g, "")
+    .replace(/[^a-z0-9/_-]+/g, "")
+}
 
 function TechIcon({ name, color }: { name: string; color: string }) {
   const iconMap: Record<string, JSX.Element> = {
@@ -65,6 +104,51 @@ function TechIcon({ name, color }: { name: string; color: string }) {
 export default function TechnologiesPage() {
   const { t } = useI18n()
 
+  const [items, setItems] = useState<string[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string>("")
+
+  useEffect(() => {
+    let alive = true
+    ;(async () => {
+      try {
+        setLoading(true)
+        setError("")
+        const list = await getTechnologies()
+        if (!alive) return
+        setItems(Array.isArray(list) ? list : [])
+      } catch (e: any) {
+        if (!alive) return
+        setItems([])
+        setError(e?.message || t("failedToLoadProjects"))
+      } finally {
+        if (!alive) return
+        setLoading(false)
+      }
+    })()
+    return () => {
+      alive = false
+    }
+  }, [t])
+
+  const techUi = useMemo(() => {
+    const arr = Array.isArray(items) ? items : []
+    return arr
+      .map((name) => String(name || "").trim())
+      .filter(Boolean)
+      .map((name) => {
+        const key = normalizeTechKey(name)
+        // чуть более дружелюбные алиасы
+        const iconKey =
+          key === "node" ? "nodejs" :
+          key === "postgres" ? "postgresql" :
+          key === "tf" ? "tensorflow" :
+          key
+        const color = hashToColorHex(name)
+        return { name, iconKey, color }
+      })
+  }, [items])
+
   return (
     <div className="min-h-screen py-12">
       <div className="container mx-auto px-4">
@@ -81,7 +165,24 @@ export default function TechnologiesPage() {
 
         {/* Technology Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto mb-16">
-          {technologies.map((tech) => (
+          {loading ? (
+            <div className="col-span-full text-center text-muted-foreground py-8">
+              {t("loading")}
+            </div>
+          ) : error ? (
+            <div className="col-span-full text-center text-red-400 py-8">
+              {error}
+              <div className="text-sm text-muted-foreground mt-2">
+                {t("checkApi")}
+                {API_BASE ? ` (${API_BASE})` : ""}
+              </div>
+            </div>
+          ) : techUi.length === 0 ? (
+            <div className="col-span-full text-center text-muted-foreground py-8">
+              Empty
+            </div>
+          ) : (
+            techUi.map((tech) => (
             <div
               key={tech.name}
               className="group glass border border-white/10 rounded-2xl p-6 text-center
@@ -89,13 +190,14 @@ export default function TechnologiesPage() {
                          hover:shadow-lg hover:shadow-pink-500/10"
             >
               <div className="flex justify-center mb-4">
-                <TechIcon name={tech.icon} color={tech.color} />
+                <TechIcon name={tech.iconKey} color={tech.color} />
               </div>
               <h3 className="font-semibold text-white group-hover:gradient-text transition-all duration-300">
                 {tech.name}
               </h3>
             </div>
-          ))}
+          ))
+          )}
         </div>
 
         {/* Bottom Text */}

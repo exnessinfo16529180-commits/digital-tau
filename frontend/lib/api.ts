@@ -97,6 +97,10 @@ export function getProjects(category?: string) {
   return apiGet<BackendProject[]>(`/api/projects${q}`)
 }
 
+export function getTechnologies() {
+  return apiGet<string[]>("/api/technologies")
+}
+
 // ---- admin/auth ----
 export async function login(username: string, password: string) {
   const res = await fetch(`${API_BASE}/api/auth/login`, {
