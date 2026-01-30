@@ -2,7 +2,16 @@
 
 import { useEffect, useRef, useState } from "react"
 import { useI18n } from "@/lib/i18n"
-import { stats } from "@/lib/data"
+
+export type Stats = {
+  projects: number
+  students: number
+  technologies: number
+}
+
+interface StatsSectionProps {
+  stats: Stats
+}
 
 interface CounterProps {
   end: number
@@ -26,34 +35,28 @@ function Counter({ end, duration = 2000, suffix = "" }: CounterProps) {
       { threshold: 0.1 }
     )
 
-    if (ref.current) {
-      observer.observe(ref.current)
-    }
-
+    if (ref.current) observer.observe(ref.current)
     return () => observer.disconnect()
   }, [])
 
   useEffect(() => {
     if (!isVisible) return
 
-    let startTime: number
-    let animationFrame: number
+    let startTime = 0
+    let animationFrame = 0
 
     const animate = (timestamp: number) => {
       if (!startTime) startTime = timestamp
       const progress = Math.min((timestamp - startTime) / duration, 1)
-      
-      // Easing function
+
+      // easing
       const easeOutQuart = 1 - Math.pow(1 - progress, 4)
       setCount(Math.floor(easeOutQuart * end))
 
-      if (progress < 1) {
-        animationFrame = requestAnimationFrame(animate)
-      }
+      if (progress < 1) animationFrame = requestAnimationFrame(animate)
     }
 
     animationFrame = requestAnimationFrame(animate)
-
     return () => cancelAnimationFrame(animationFrame)
   }, [isVisible, end, duration])
 
@@ -65,13 +68,20 @@ function Counter({ end, duration = 2000, suffix = "" }: CounterProps) {
   )
 }
 
-export function StatsSection() {
+export function StatsSection({ stats }: StatsSectionProps) {
   const { t } = useI18n()
 
+  // защита от undefined / null
+  const safe = {
+    projects: Number(stats?.projects ?? 0),
+    students: Number(stats?.students ?? 0),
+    technologies: Number(stats?.technologies ?? 0),
+  }
+
   const statsData = [
-    { value: stats.projects, suffix: "+", label: t("projectsCount") },
-    { value: stats.students, suffix: "+", label: t("studentsCount") },
-    { value: stats.technologies, suffix: "+", label: t("technologiesCount") },
+    { value: safe.projects, suffix: "+", label: t("projectsCount") },
+    { value: safe.students, suffix: "+", label: t("studentsCount") },
+    { value: safe.technologies, suffix: "+", label: t("technologiesCount") },
   ]
 
   return (

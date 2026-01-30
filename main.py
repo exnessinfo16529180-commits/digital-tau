@@ -3,6 +3,9 @@ import re
 import secrets
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
+
 
 from fastapi import (
     FastAPI,
@@ -652,3 +655,15 @@ def admin_projects_delete(project_id: int, request: Request):
         pass
 
     return RedirectResponse("/admin/projects", status_code=302)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.get("/")
+def root():
+    return RedirectResponse("http://localhost:3000", status_code=302)

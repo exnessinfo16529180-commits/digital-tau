@@ -88,7 +88,7 @@ export function Header() {
                   href={item.href}
                   className={cn(
                     "relative text-sm font-medium transition-colors duration-300 py-2",
-                    pathname === item.href
+                    pathname === item.href    
                       ? "text-white"
                       : "text-white/70 hover:text-white"
                   )}

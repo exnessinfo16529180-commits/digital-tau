@@ -1,107 +1,118 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
-import { projects } from "@/lib/data"
-import { ProjectCard } from "./project-card"
+import type { UiProject } from "@/lib/mappers/project.mapper"
+import type { BackendProject } from "@/lib/api"
+import { ProjectCard } from "@/components/project-card"
 
-export function FeaturedProjects() {
-  const { t } = useI18n()
+/* ---------- helpers ---------- */
+
+function mapCategory(cat?: string): UiProject["category"] {
+  if (cat === "aiml") return "AI/ML"
+  if (cat === "iot") return "IoT"
+  if (cat === "web") return "Web"
+  if (cat === "mobile") return "Mobile"
+  return "VR/AR"
+}
+
+function mapProject(p: BackendProject, lang: "ru" | "kz" | "en"): UiProject {
+  return {
+    id: String(p.id),
+    title:
+      (lang === "ru" && p.titleRu) ||
+      (lang === "kz" && p.titleKz) ||
+      p.titleEn ||
+      "Untitled project",
+
+    description:
+      (lang === "ru" && p.descriptionRu) ||
+      (lang === "kz" && p.descriptionKz) ||
+      p.descriptionEn ||
+      "",
+
+    category: mapCategory(p.category ?? undefined),
+
+    techStack: Array.isArray(p.technologies) ? p.technologies : [],
+    image: p.image ?? undefined,
+    projectUrl: (p.projectUrl ?? p.project_url) ?? undefined,
+    featured: Boolean(p.featured),
+
+  }
+}
+
+/* ---------- component ---------- */
+
+type Props = {
+  items?: BackendProject[]
+}
+
+export function FeaturedProjects({ items = [] }: Props) {
+  const i18n = useI18n()
+  const t = i18n.t
+  const lang = (i18n as any).lang ?? "ru"
+
   const scrollRef = useRef<HTMLDivElement>(null)
   const [currentIndex, setCurrentIndex] = useState(0)
 
-  const featuredProjects = projects.filter((p) => p.status === "active").slice(0, 6)
-  const totalSlides = featuredProjects.length
+  const projects = useMemo<UiProject[]>(() => {
+    return items.map((p) => mapProject(p, lang))
+  }, [items, lang])
 
-  const scroll = (direction: "left" | "right") => {
-    if (!scrollRef.current) return
+  const visible = projects.slice(0, 6)
+  const total = visible.length
 
-    const cardWidth = 380
-    const gap = 24
-    const scrollAmount = cardWidth + gap
-
-    if (direction === "left") {
-      scrollRef.current.scrollBy({ left: -scrollAmount, behavior: "smooth" })
-      setCurrentIndex(Math.max(0, currentIndex - 1))
-    } else {
-      scrollRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" })
-      setCurrentIndex(Math.min(totalSlides - 1, currentIndex + 1))
-    }
+  if (total === 0) {
+    return (
+      <section className="py-20 text-center text-muted-foreground">
+        {t("noProjects") ?? "No projects"}
+      </section>
+    )
   }
 
-  const scrollToIndex = (index: number) => {
+  const scroll = (dir: "left" | "right") => {
     if (!scrollRef.current) return
-
-    const cardWidth = 380
-    const gap = 24
-    const scrollPosition = index * (cardWidth + gap)
-
-    scrollRef.current.scrollTo({ left: scrollPosition, behavior: "smooth" })
-    setCurrentIndex(index)
+    const step = 404
+    scrollRef.current.scrollBy({
+      left: dir === "left" ? -step : step,
+      behavior: "smooth",
+    })
+    setCurrentIndex((i) =>
+      dir === "left" ? Math.max(0, i - 1) : Math.min(total - 1, i + 1)
+    )
   }
 
   return (
-    <section className="py-20 relative overflow-hidden">
+    <section className="py-20 relative">
       <div className="container mx-auto px-4">
-        {/* Section Title */}
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold gradient-text mb-2">
+          <h2 className="text-3xl md:text-4xl font-bold gradient-text">
             {t("featuredProjects")}
           </h2>
-          <div className="w-24 h-1 gradient-bg mx-auto rounded-full" />
         </div>
 
-        {/* Carousel */}
         <div className="relative">
-          {/* Cards Container */}
           <div
             ref={scrollRef}
-            className="flex gap-6 overflow-x-auto scrollbar-hide pb-4 snap-x snap-mandatory"
-            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+            className="flex gap-6 overflow-x-auto scrollbar-hide pb-4"
           >
-            {featuredProjects.map((project) => (
-              <div key={project.id} className="flex-none w-[350px] snap-start">
+            {visible.map((project) => (
+              <div key={project.id} className="flex-none w-[350px]">
                 <ProjectCard project={project} />
               </div>
             ))}
           </div>
 
-          {/* Navigation Arrows */}
-          <div className="flex items-center justify-center gap-4 mt-8">
-            <button
-              onClick={() => scroll("left")}
-              className="p-3 rounded-full glass border border-white/10 text-white/70
-                         hover:text-white hover:border-white/30 transition-all duration-300
-                         disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={currentIndex === 0}
-            >
-              <ChevronLeft size={24} />
+          <div className="flex justify-center gap-4 mt-8">
+            <button onClick={() => scroll("left")} disabled={currentIndex === 0}>
+              <ChevronLeft />
             </button>
-
-            {/* Pagination Dots */}
-            <div className="flex items-center gap-2">
-              {featuredProjects.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => scrollToIndex(index)}
-                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                    index === currentIndex
-                      ? "w-6 gradient-bg"
-                      : "bg-white/30 hover:bg-white/50"
-                  }`}
-                />
-              ))}
-            </div>
-
             <button
               onClick={() => scroll("right")}
-              className="p-3 rounded-full glass border border-white/10 text-white/70
-                         hover:text-white hover:border-white/30 transition-all duration-300
-                         disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={currentIndex === totalSlides - 1}
+              disabled={currentIndex >= total - 1}
             >
-              <ChevronRight size={24} />
+              <ChevronRight />
             </button>
           </div>
         </div>
