@@ -65,6 +65,39 @@ def create_public_api_router(engine: Engine) -> APIRouter:
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"projects db error: {e}")
 
+    @router.get("/api/projects/{project_id}")
+    def api_project(project_id: int):
+        try:
+            with engine.connect() as conn:
+                row = conn.execute(
+                    text(
+                        """
+                        SELECT
+                            id,
+                            title_ru, title_kz, title_en,
+                            description_ru, description_kz, description_en,
+                            technologies,
+                            genres,
+                            image,
+                            category,
+                            featured,
+                            project_url
+                        FROM projects
+                        WHERE id = :id
+                        """
+                    ),
+                    {"id": project_id},
+                ).mappings().first()
+
+            if not row:
+                raise HTTPException(status_code=404, detail="Project not found")
+
+            return row_to_project(dict(row))
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"project db error: {e}")
+
     @router.get("/api/technologies")
     def api_technologies():
         try:

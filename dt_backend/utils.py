@@ -1,6 +1,11 @@
 import re
 from typing import Any, Dict, List
 
+import html
+from html.parser import HTMLParser
+from typing import Optional, Tuple
+from urllib.parse import urlparse
+
 
 def escape_html(s: Any) -> str:
     return (
@@ -95,3 +100,107 @@ def row_to_project(row: Dict[str, Any]) -> Dict[str, Any]:
         "featured": bool(row.get("featured")),
         "projectUrl": row.get("project_url"),
     }
+
+
+class _RichTextSanitizer(HTMLParser):
+    # Minimal allowlist for rich text descriptions.
+    _ALLOWED_TAGS = {
+        "p",
+        "br",
+        "strong",
+        "b",
+        "em",
+        "i",
+        "u",
+        "ul",
+        "ol",
+        "li",
+        "blockquote",
+        "code",
+        "pre",
+        "a",
+    }
+    _SELF_CLOSING = {"br"}
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=False)
+        self._out: list[str] = []
+        self._open: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs: list[Tuple[str, Optional[str]]]) -> None:
+        t = (tag or "").lower()
+        if t not in self._ALLOWED_TAGS:
+            return
+
+        if t == "a":
+            href = ""
+            for k, v in attrs or []:
+                if (k or "").lower() == "href" and v:
+                    href = str(v).strip()
+                    break
+
+            safe_href = ""
+            if href:
+                try:
+                    u = urlparse(href)
+                    if u.scheme in ("http", "https", "mailto"):
+                        safe_href = href
+                except Exception:
+                    safe_href = ""
+
+            if safe_href:
+                self._out.append(
+                    f'<a href="{html.escape(safe_href, quote=True)}" target="_blank" rel="noopener noreferrer nofollow">'
+                )
+                self._open.append("a")
+            else:
+                # No href -> treat as formatting-less span by skipping tag.
+                return
+        else:
+            self._out.append(f"<{t}>")
+            if t not in self._SELF_CLOSING:
+                self._open.append(t)
+
+    def handle_endtag(self, tag: str) -> None:
+        t = (tag or "").lower()
+        if t not in self._ALLOWED_TAGS or t in self._SELF_CLOSING:
+            return
+
+        # Close the latest matching tag to keep nesting valid.
+        if t in self._open:
+            while self._open:
+                last = self._open.pop()
+                self._out.append(f"</{last}>")
+                if last == t:
+                    break
+
+    def handle_data(self, data: str) -> None:
+        if not data:
+            return
+        self._out.append(html.escape(data))
+
+    def handle_entityref(self, name: str) -> None:
+        self._out.append(f"&{name};")
+
+    def handle_charref(self, name: str) -> None:
+        self._out.append(f"&#{name};")
+
+    def get_html(self) -> str:
+        while self._open:
+            self._out.append(f"</{self._open.pop()}>")
+        return "".join(self._out)
+
+
+def sanitize_rich_text_html(raw: Any) -> str:
+    """
+    Sanitizes rich text HTML from the admin editor.
+    - Allows only a small set of tags (no inline styles, no arbitrary attributes).
+    - For <a>, keeps only safe href schemes: http/https/mailto.
+    """
+    s = str(raw if raw is not None else "").strip()
+    if not s:
+        return ""
+    parser = _RichTextSanitizer()
+    parser.feed(s)
+    parser.close()
+    return parser.get_html()

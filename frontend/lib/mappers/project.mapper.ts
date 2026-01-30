@@ -1,6 +1,7 @@
 // frontend/lib/mappers/project.mapper.ts
 
 import type { BackendProject } from "@/lib/api"
+import { stripHtml } from "@/lib/utils"
 
 export type UiCategory = "AI/ML" | "IoT" | "Web" | "Mobile" | "VR/AR"
 
@@ -60,12 +61,13 @@ export function backendToUiProject(
   opts: { lang: "ru" | "kz" | "en"; apiBase: string }
 ): UiProject {
   const title = pickByLang(opts.lang, p.titleRu, p.titleKz, p.titleEn)
-  const description = pickByLang(
+  const descriptionRaw = pickByLang(
     opts.lang,
     p.descriptionRu,
     p.descriptionKz,
     p.descriptionEn
   )
+  const description = stripHtml(descriptionRaw)
 
   const techStack = Array.isArray(p.technologies)
     ? p.technologies.map((x) => String(x)).filter(Boolean)

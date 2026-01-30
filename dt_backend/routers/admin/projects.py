@@ -10,7 +10,7 @@ from sqlalchemy.engine import Engine
 
 from .auth import require_login
 from .html import admin_layout, project_form_html
-from ...utils import escape_html, parse_tech_input, safe_filename
+from ...utils import escape_html, parse_tech_input, safe_filename, sanitize_rich_text_html
 
 
 def create_admin_projects_router(engine: Engine, uploads_dir: Path) -> APIRouter:
@@ -125,6 +125,9 @@ def create_admin_projects_router(engine: Engine, uploads_dir: Path) -> APIRouter
         require_login(request)
 
         featured_bool = _truthy(featured)
+        description_ru = sanitize_rich_text_html(description_ru)
+        description_kz = sanitize_rich_text_html(description_kz)
+        description_en = sanitize_rich_text_html(description_en)
 
         image_path = ""
         if image_file and image_file.filename:
@@ -240,6 +243,9 @@ def create_admin_projects_router(engine: Engine, uploads_dir: Path) -> APIRouter
         require_login(request)
 
         featured_bool = _truthy(featured)
+        description_ru = sanitize_rich_text_html(description_ru)
+        description_kz = sanitize_rich_text_html(description_kz)
+        description_en = sanitize_rich_text_html(description_en)
 
         with engine.connect() as conn:
             old_img = conn.execute(text("SELECT image FROM projects WHERE id=:id"), {"id": project_id}).scalar()

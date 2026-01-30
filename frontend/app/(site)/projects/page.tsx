@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { Search } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
-import { cn } from "@/lib/utils"
+import { cn, stripHtml } from "@/lib/utils"
 import { getProjects, type BackendProject } from "@/lib/api"
 import { ProjectCard } from "@/components/project-card"
 import type { UiProject } from "@/lib/mappers/project.mapper"
@@ -39,14 +39,14 @@ function pickLangText(p: BackendProject, lang: "ru" | "kz" | "en") {
     p.titleKz ||
     "Untitled project"
 
-  const description =
+  const descriptionRaw =
     (lang === "ru" ? p.descriptionRu : lang === "kz" ? p.descriptionKz : p.descriptionEn) ||
     p.descriptionEn ||
     p.descriptionRu ||
     p.descriptionKz ||
     ""
 
-  return { title, description }
+  return { title, description: stripHtml(descriptionRaw) }
 }
 
 function toUiProject(p: BackendProject, lang: "ru" | "kz" | "en"): UiProject {

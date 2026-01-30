@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
+import { stripHtml } from "@/lib/utils"
 import type { UiProject } from "@/lib/mappers/project.mapper"
 import type { BackendProject } from "@/lib/api"
 import { ProjectCard } from "@/components/project-card"
@@ -27,10 +28,12 @@ function mapProject(p: BackendProject, lang: "ru" | "kz" | "en"): UiProject {
       "Untitled project",
 
     description:
-      (lang === "ru" && p.descriptionRu) ||
-      (lang === "kz" && p.descriptionKz) ||
-      p.descriptionEn ||
-      "",
+      stripHtml(
+        (lang === "ru" && p.descriptionRu) ||
+          (lang === "kz" && p.descriptionKz) ||
+          p.descriptionEn ||
+          ""
+      ),
 
     category: mapCategory(p.category ?? undefined),
 
