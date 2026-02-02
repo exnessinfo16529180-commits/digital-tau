@@ -2,24 +2,46 @@
 
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
+import { useEffect, useState } from "react"
 import { useI18n } from "@/lib/i18n"
+
+type Particle = {
+  id: number
+  left: string
+  top: string
+  animationDelay: string
+  animationDuration: string
+}
 
 export function HeroSection() {
   const { t } = useI18n()
+  const [particles, setParticles] = useState<Particle[]>([])
+
+  useEffect(() => {
+    setParticles(
+      Array.from({ length: 20 }).map((_, i) => ({
+        id: i,
+        left: `${Math.random() * 100}%`,
+        top: `${Math.random() * 100}%`,
+        animationDelay: `${Math.random() * 3}s`,
+        animationDuration: `${3 + Math.random() * 2}s`,
+      }))
+    )
+  }, [])
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Floating particles */}
       <div className="absolute inset-0 pointer-events-none">
-        {Array.from({ length: 20 }).map((_, i) => (
+        {particles.map((p) => (
           <div
-            key={i}
+            key={p.id}
             className="absolute w-1 h-1 rounded-full bg-gradient-to-r from-pink-500 to-orange-500 opacity-30 animate-float"
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 3}s`,
-              animationDuration: `${3 + Math.random() * 2}s`,
+              left: p.left,
+              top: p.top,
+              animationDelay: p.animationDelay,
+              animationDuration: p.animationDuration,
             }}
           />
         ))}

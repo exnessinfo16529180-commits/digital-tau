@@ -55,7 +55,9 @@ def ensure_schema(engine: Engine) -> None:
                   genres TEXT[] NOT NULL DEFAULT '{}',
 
                   image TEXT NOT NULL DEFAULT '',
+                  images TEXT[] NOT NULL DEFAULT '{}',
                   category TEXT NOT NULL DEFAULT 'web',
+                  categories TEXT[] NOT NULL DEFAULT '{}',
                   featured BOOLEAN NOT NULL DEFAULT FALSE,
 
                   project_url TEXT NOT NULL DEFAULT ''
@@ -66,6 +68,8 @@ def ensure_schema(engine: Engine) -> None:
 
         # Если projects уже есть (например, после старой версии схемы) — добавим недостающие поля.
         conn.execute(text("ALTER TABLE projects ADD COLUMN IF NOT EXISTS genres TEXT[] NOT NULL DEFAULT '{}'"))
+        conn.execute(text("ALTER TABLE projects ADD COLUMN IF NOT EXISTS categories TEXT[] NOT NULL DEFAULT '{}'"))
+        conn.execute(text("ALTER TABLE projects ADD COLUMN IF NOT EXISTS images TEXT[] NOT NULL DEFAULT '{}'"))
 
         conn.execute(
             text(

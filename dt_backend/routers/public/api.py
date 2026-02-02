@@ -45,7 +45,9 @@ def create_public_api_router(engine: Engine) -> APIRouter:
                     technologies,
                     genres,
                     image,
+                    images,
                     category,
+                    categories,
                     featured,
                     project_url
                 FROM projects
@@ -53,7 +55,7 @@ def create_public_api_router(engine: Engine) -> APIRouter:
             params: Dict[str, Any] = {}
 
             if category and category != "all":
-                sql += " WHERE category = :category"
+                sql += " WHERE category = :category OR :category = ANY(categories)"
                 params["category"] = category
 
             sql += " ORDER BY featured DESC, id ASC"
@@ -79,7 +81,9 @@ def create_public_api_router(engine: Engine) -> APIRouter:
                             technologies,
                             genres,
                             image,
+                            images,
                             category,
+                            categories,
                             featured,
                             project_url
                         FROM projects

@@ -45,6 +45,11 @@ function mapProject(p: BackendProject, lang: "ru" | "kz" | "en"): UiProject {
   }
 }
 
+function isValidProjectId(id: string) {
+  const s = String(id ?? "").trim()
+  return !!s && s !== "undefined" && s !== "null" && /^\d+$/.test(s)
+}
+
 /* ---------- component ---------- */
 
 type Props = {
@@ -60,7 +65,7 @@ export function FeaturedProjects({ items = [] }: Props) {
   const [currentIndex, setCurrentIndex] = useState(0)
 
   const projects = useMemo<UiProject[]>(() => {
-    return items.map((p) => mapProject(p, lang))
+    return items.map((p) => mapProject(p, lang)).filter((p) => isValidProjectId(p.id))
   }, [items, lang])
 
   const visible = projects.slice(0, 6)

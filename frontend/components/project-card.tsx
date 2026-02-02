@@ -3,9 +3,12 @@
 import Link from "next/link"
 import Image from "next/image"
 import { ArrowRight } from "lucide-react"
+import { useState } from "react"
 import { useI18n } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 import type { UiProject } from "@/lib/mappers/project.mapper"
+
+const brokenImageUrls = new Set<string>()
 
 type Props = {
   project: UiProject
@@ -14,17 +17,17 @@ type Props = {
 
 export function ProjectCard({ project, className }: Props) {
   const { t } = useI18n()
+  const [imgFailed, setImgFailed] = useState(() => !!(project.image && brokenImageUrls.has(project.image)))
 
   const title = project.title?.trim() || "Untitled project"
   const description = project.description?.trim() || "—"
   const category = project.category || "Web"
 
+  const idStr = String(project.id ?? "").trim()
   const href =
-    project.projectUrl && project.projectUrl !== "#"
-      ? project.projectUrl
+    idStr && idStr !== "undefined" && idStr !== "null"
+      ? `/projects/${encodeURIComponent(idStr)}`
       : "/projects"
-
-  const isExternal = href.startsWith("http://") || href.startsWith("https://")
 
   // безопасный techStack
   const techs = Array.isArray(project.techStack) ? project.techStack : []
@@ -40,13 +43,17 @@ export function ProjectCard({ project, className }: Props) {
     >
       {/* IMAGE */}
       <div className="relative h-48 overflow-hidden bg-gradient-to-br from-gray-900 to-gray-800">
-        {project.image ? (
+        {project.image && !imgFailed ? (
           <Image
             src={project.image}
             alt={title}
             fill
             className="object-cover opacity-90"
             sizes="(max-width: 768px) 100vw, 350px"
+            onError={() => {
+              brokenImageUrls.add(project.image as string)
+              setImgFailed(true)
+            }}
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-4xl text-white/20">
@@ -91,13 +98,11 @@ export function ProjectCard({ project, className }: Props) {
         </div>
 
         {/* BUTTON */}
-        <Link
-          href={href}
-          target={isExternal ? "_blank" : undefined}
-          rel={isExternal ? "noopener noreferrer" : undefined}
-          className="inline-flex items-center gap-2 text-sm font-medium gradient-text group/btn"
-        >
-          {t("viewProject")}
+      <Link
+        href={href}
+        className="inline-flex items-center gap-2 text-sm font-medium gradient-text group/btn"
+      >
+        {t("viewProject")}
           <ArrowRight
             size={16}
             className="transition-transform duration-300 group-hover/btn:translate-x-1"

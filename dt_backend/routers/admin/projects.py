@@ -29,6 +29,93 @@ def create_admin_projects_router(engine: Engine, uploads_dir: Path) -> APIRouter
             genres = conn.execute(text("SELECT name FROM genres ORDER BY name ASC")).scalars().all()
         return list(categories or []), list(technologies or []), list(genres or [])
 
+    async def _save_image(upload: UploadFile) -> str:
+        fname = safe_filename(upload.filename)
+        fname = f"{secrets.token_hex(6)}_{fname}"
+        dest = uploads_dir / fname
+        dest.write_bytes(await upload.read())
+        return f"/static/uploads/{fname}"
+
+    def _delete_upload(path: str) -> None:
+        try:
+            if not path or not str(path).startswith("/static/uploads/"):
+                return
+            fname = str(path).split("/static/uploads/")[-1]
+            fpath = uploads_dir / fname
+            if fpath.exists():
+                fpath.unlink()
+        except Exception:
+            pass
+
+    def _unique_keep_order(items: list[str]) -> list[str]:
+        seen: set[str] = set()
+        out: list[str] = []
+        for x in items or []:
+            s = str(x or "").strip()
+            if not s or s in seen:
+                continue
+            seen.add(s)
+            out.append(s)
+        return out
+
+    def _upload_exists(url_path: str) -> bool:
+        p = str(url_path or "").strip()
+        if not p.startswith("/static/uploads/"):
+            return True
+        fname = p.split("/static/uploads/")[-1]
+        if not fname:
+            return False
+        return (uploads_dir / fname).exists()
+
+    @router.post("/api/admin/projects/cleanup-uploads")
+    def cleanup_missing_uploads(request: Request):
+        """
+        Removes references to missing files in /static/uploads from DB.
+        Does NOT delete any existing files.
+        """
+        require_login(request)
+
+        checked = 0
+        updated = 0
+        removed_refs = 0
+
+        with engine.connect() as conn:
+            rows = conn.execute(text("SELECT id, image, images FROM projects ORDER BY id ASC")).mappings().all()
+
+        with engine.begin() as conn:
+            for r in rows:
+                checked += 1
+                pid = int(r["id"])
+
+                image = str(r.get("image") or "").strip()
+                images = parse_tech_input(r.get("images"))
+
+                new_image = image if _upload_exists(image) else ""
+                if image and not new_image:
+                    removed_refs += 1
+
+                new_images: list[str] = []
+                for p in images:
+                    if not p:
+                        continue
+                    if _upload_exists(p):
+                        new_images.append(p)
+                    else:
+                        removed_refs += 1
+
+                new_images = _unique_keep_order(new_images)
+                if new_image:
+                    new_images = [new_image] + [p for p in new_images if p != new_image]
+
+                if new_image != image or new_images != images:
+                    updated += 1
+                    conn.execute(
+                        text("UPDATE projects SET image=:image, images=:images WHERE id=:id"),
+                        {"id": pid, "image": new_image, "images": new_images},
+                    )
+
+        return {"ok": True, "checked": checked, "updated": updated, "removedRefs": removed_refs}
+
     @router.get("/api/admin/projects", response_class=HTMLResponse)
     def admin_projects(request: Request):
         require_login(request)
@@ -118,9 +205,11 @@ def create_admin_projects_router(engine: Engine, uploads_dir: Path) -> APIRouter
         technologies: list[str] = Form([]),
         genres: list[str] = Form([]),
         category: str = Form("web"),
+        categories: list[str] = Form([]),
         featured: Optional[str] = Form(None),
         project_url: str = Form(""),
         image_file: Optional[UploadFile] = File(None),
+        gallery_files: list[UploadFile] = File([]),
     ):
         require_login(request)
 
@@ -131,14 +220,23 @@ def create_admin_projects_router(engine: Engine, uploads_dir: Path) -> APIRouter
 
         image_path = ""
         if image_file and image_file.filename:
-            fname = safe_filename(image_file.filename)
-            fname = f"{secrets.token_hex(6)}_{fname}"
-            dest = uploads_dir / fname
-            dest.write_bytes(await image_file.read())
-            image_path = f"/static/uploads/{fname}"
+            image_path = await _save_image(image_file)
+
+        gallery_paths: list[str] = []
+        for f in gallery_files or []:
+            if f and f.filename:
+                gallery_paths.append(await _save_image(f))
 
         tech_list = parse_tech_input(technologies)
         genres_list = parse_tech_input(genres)
+        categories_list = parse_tech_input(categories)
+        if not categories_list:
+            c = (category or "web").strip() or "web"
+            categories_list = [c]
+        # Primary category for existing UI/filtering.
+        category = categories_list[0]
+
+        images_list = _unique_keep_order(([image_path] if image_path else []) + gallery_paths)
 
         with engine.begin() as conn:
             conn.execute(
@@ -147,11 +245,11 @@ def create_admin_projects_router(engine: Engine, uploads_dir: Path) -> APIRouter
                     INSERT INTO projects (
                         title_ru, title_kz, title_en,
                         description_ru, description_kz, description_en,
-                        technologies, genres, image, category, featured, project_url
+                        technologies, genres, image, images, category, categories, featured, project_url
                     ) VALUES (
                         :title_ru, :title_kz, :title_en,
                         :description_ru, :description_kz, :description_en,
-                        :technologies, :genres, :image, :category, :featured, :project_url
+                        :technologies, :genres, :image, :images, :category, :categories, :featured, :project_url
                     )
                     """
                 ),
@@ -165,7 +263,9 @@ def create_admin_projects_router(engine: Engine, uploads_dir: Path) -> APIRouter
                     "technologies": tech_list,
                     "genres": genres_list,
                     "image": image_path,
+                    "images": images_list,
                     "category": category,
+                    "categories": categories_list,
                     "featured": featured_bool,
                     "project_url": project_url.strip(),
                 },
@@ -236,9 +336,13 @@ def create_admin_projects_router(engine: Engine, uploads_dir: Path) -> APIRouter
         technologies: list[str] = Form([]),
         genres: list[str] = Form([]),
         category: str = Form("web"),
+        categories: list[str] = Form([]),
         featured: Optional[str] = Form(None),
         project_url: str = Form(""),
         image_file: Optional[UploadFile] = File(None),
+        gallery_files: list[UploadFile] = File([]),
+        replace_gallery: Optional[str] = Form(None),
+        remove_images: Optional[str] = Form(None),
     ):
         require_login(request)
 
@@ -248,18 +352,46 @@ def create_admin_projects_router(engine: Engine, uploads_dir: Path) -> APIRouter
         description_en = sanitize_rich_text_html(description_en)
 
         with engine.connect() as conn:
-            old_img = conn.execute(text("SELECT image FROM projects WHERE id=:id"), {"id": project_id}).scalar()
+            row = conn.execute(
+                text("SELECT image, images FROM projects WHERE id=:id"),
+                {"id": project_id},
+            ).mappings().first()
+
+        if not row:
+            raise HTTPException(status_code=404, detail="Project not found")
+
+        old_img = row.get("image") or ""
+        old_images = parse_tech_input(row.get("images"))
 
         image_path = old_img or ""
         if image_file and image_file.filename:
-            fname = safe_filename(image_file.filename)
-            fname = f"{secrets.token_hex(6)}_{fname}"
-            dest = uploads_dir / fname
-            dest.write_bytes(await image_file.read())
-            image_path = f"/static/uploads/{fname}"
+            image_path = await _save_image(image_file)
 
         tech_list = parse_tech_input(technologies)
         genres_list = parse_tech_input(genres)
+        categories_list = parse_tech_input(categories)
+        if not categories_list:
+            c = (category or "web").strip() or "web"
+            categories_list = [c]
+        category = categories_list[0]
+
+        remove_list = parse_tech_input(remove_images)
+        kept_old_images = [p for p in old_images if p and p not in remove_list]
+
+        gallery_paths: list[str] = []
+        for f in gallery_files or []:
+            if f and f.filename:
+                gallery_paths.append(await _save_image(f))
+
+        replace_gallery_bool = _truthy(replace_gallery)
+        base_images = ([] if replace_gallery_bool else kept_old_images) + gallery_paths
+        base_images = _unique_keep_order(base_images)
+
+        # Keep cover image first (if any).
+        if image_path:
+            images_list = [image_path] + [p for p in base_images if p != image_path]
+        else:
+            images_list = base_images
 
         with engine.begin() as conn:
             res = conn.execute(
@@ -276,7 +408,9 @@ def create_admin_projects_router(engine: Engine, uploads_dir: Path) -> APIRouter
                         technologies=:technologies,
                         genres=:genres,
                         image=:image,
+                        images=:images,
                         category=:category,
+                        categories=:categories,
                         featured=:featured,
                         project_url=:project_url
                     WHERE id=:id
@@ -293,13 +427,22 @@ def create_admin_projects_router(engine: Engine, uploads_dir: Path) -> APIRouter
                     "technologies": tech_list,
                     "genres": genres_list,
                     "image": image_path,
+                    "images": images_list,
                     "category": category,
+                    "categories": categories_list,
                     "featured": featured_bool,
                     "project_url": project_url.strip(),
                 },
             )
             if res.rowcount == 0:
                 raise HTTPException(status_code=404, detail="Project not found")
+
+        # Cleanup removed uploads (best-effort).
+        if remove_list:
+            still_used = set(images_list + ([image_path] if image_path else []))
+            for p in remove_list:
+                if p and p not in still_used:
+                    _delete_upload(p)
 
         return RedirectResponse("/api/admin/projects", status_code=302)
 
@@ -308,17 +451,16 @@ def create_admin_projects_router(engine: Engine, uploads_dir: Path) -> APIRouter
         require_login(request)
 
         with engine.begin() as conn:
-            img = conn.execute(text("SELECT image FROM projects WHERE id=:id"), {"id": project_id}).scalar()
+            row = conn.execute(
+                text("SELECT image, images FROM projects WHERE id=:id"),
+                {"id": project_id},
+            ).mappings().first()
             conn.execute(text("DELETE FROM projects WHERE id=:id"), {"id": project_id})
 
-        try:
-            if img and str(img).startswith("/static/uploads/"):
-                fname = str(img).split("/static/uploads/")[-1]
-                fpath = uploads_dir / fname
-                if fpath.exists():
-                    fpath.unlink()
-        except Exception:
-            pass
+        img = (row or {}).get("image") or ""
+        imgs = parse_tech_input((row or {}).get("images"))
+        for p in _unique_keep_order(([img] if img else []) + imgs):
+            _delete_upload(p)
 
         return RedirectResponse("/api/admin/projects", status_code=302)
 

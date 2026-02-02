@@ -92,7 +92,9 @@ export function ProjectsFromApi({ onlyFeatured = false }: { onlyFeatured?: boole
     const arr = Array.isArray(items) ? items : []
     const filtered = onlyFeatured ? arr.filter((x) => !!x.featured) : arr
 
-    return filtered.map((p) => {
+    return filtered
+      .filter((p) => p && p.id !== undefined && p.id !== null && /^\d+$/.test(String(p.id)))
+      .map((p) => {
       const { title, description } = pickTextByLang(p, lang)
 
       const projectUrl = (p.projectUrl ?? (p as any).project_url ?? "") as string
@@ -108,7 +110,7 @@ export function ProjectsFromApi({ onlyFeatured = false }: { onlyFeatured?: boole
         projectUrl,
         featured: Boolean(p.featured),
       }
-    })
+      })
   }, [items, onlyFeatured, lang])
 
   if (loading) return <div className="text-center text-muted-foreground py-10">{t("loading")}</div>

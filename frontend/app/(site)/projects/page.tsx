@@ -71,6 +71,11 @@ function toUiProject(p: BackendProject, lang: "ru" | "kz" | "en"): UiProject {
     featured: Boolean(p.featured),
   }
 }
+
+function isValidProjectId(id: string) {
+  const s = String(id ?? "").trim()
+  return !!s && s !== "undefined" && s !== "null" && /^\d+$/.test(s)
+}
 // -------------------------
 
 export default function ProjectsPage() {
@@ -110,7 +115,8 @@ export default function ProjectsPage() {
 
   // 2) переводим проекты к виду карточки (UiProject)
   const uiProjects = useMemo(() => {
-    return (Array.isArray(items) ? items : []).map((p) => toUiProject(p, lang))
+    const mapped = (Array.isArray(items) ? items : []).map((p) => toUiProject(p, lang))
+    return mapped.filter((p) => isValidProjectId(p.id))
   }, [items, lang])
 
   // 3) категории берём из проектов БД

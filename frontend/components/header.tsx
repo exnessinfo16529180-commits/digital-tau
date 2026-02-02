@@ -27,10 +27,15 @@ export function Header() {
   const router = useRouter()
   const { language, setLanguage, t } = useI18n()
   const { isAuthenticated, logout } = useAuth()
+  const [mounted, setMounted] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [loginModalOpen, setLoginModalOpen] = useState(false)
   const [adminDropdownOpen, setAdminDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -88,7 +93,7 @@ export function Header() {
                   href={item.href}
                   className={cn(
                     "relative text-sm font-medium transition-colors duration-300 py-2",
-                    pathname === item.href    
+                    mounted && pathname === item.href
                       ? "text-white"
                       : "text-white/70 hover:text-white"
                   )}
@@ -97,7 +102,7 @@ export function Header() {
                   <span
                     className={cn(
                       "absolute bottom-0 left-0 h-0.5 gradient-bg transition-all duration-300",
-                      pathname === item.href ? "w-full" : "w-0 group-hover:w-full"
+                      mounted && pathname === item.href ? "w-full" : "w-0 group-hover:w-full"
                     )}
                   />
                 </Link>
@@ -205,7 +210,7 @@ export function Header() {
                     onClick={() => setMobileMenuOpen(false)}
                     className={cn(
                       "text-sm font-medium transition-colors duration-300 py-2",
-                      pathname === item.href
+                      mounted && pathname === item.href
                         ? "gradient-text"
                         : "text-white/70 hover:text-white"
                     )}

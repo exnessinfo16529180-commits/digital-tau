@@ -19,7 +19,9 @@ export type BackendProject = {
   technologies?: string[] | string
   genres?: string[] | string
   image?: string
+  images?: string[] | string
   category?: string
+  categories?: string[] | string
   featured?: boolean
   projectUrl?: string
   project_url?: string
@@ -70,11 +72,15 @@ export function ProjectEditor({ mode }: { mode: Mode }) {
 
   const [selectedTechnologies, setSelectedTechnologies] = useState<string[]>([])
   const [selectedGenres, setSelectedGenres] = useState<string[]>([])
-  const [category, setCategory] = useState("web")
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(["web"])
   const [featured, setFeatured] = useState(false)
   const [projectUrl, setProjectUrl] = useState("")
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [currentImage, setCurrentImage] = useState<string>("")
+  const [galleryFiles, setGalleryFiles] = useState<File[]>([])
+  const [currentGallery, setCurrentGallery] = useState<string[]>([])
+  const [removedGallery, setRemovedGallery] = useState<string[]>([])
+  const [replaceGallery, setReplaceGallery] = useState(false)
 
   const [submitting, setSubmitting] = useState(false)
 
@@ -130,11 +136,16 @@ export function ProjectEditor({ mode }: { mode: Mode }) {
 
       setSelectedTechnologies(normalizeToArray(p.technologies))
       setSelectedGenres(normalizeToArray(p.genres))
-      setCategory(p.category || "web")
+      const cats = normalizeToArray(p.categories)
+      setSelectedCategories(cats.length ? cats : [p.category || "web"].filter(Boolean))
       setFeatured(Boolean(p.featured))
       setProjectUrl(p.projectUrl || (p as any).project_url || "")
       setCurrentImage(p.image || "")
+      setCurrentGallery(normalizeToArray((p as any).images))
       setImageFile(null)
+      setGalleryFiles([])
+      setRemovedGallery([])
+      setReplaceGallery(false)
     } catch (e: any) {
       setError(e?.message || "Failed to load project")
     } finally {
@@ -147,8 +158,17 @@ export function ProjectEditor({ mode }: { mode: Mode }) {
   }, [])
 
   useEffect(() => {
-    if (mode.kind === "edit") loadProject(mode.id)
-  }, [mode])
+    if (mode.kind !== "edit") return
+
+    const rawId = String((mode as any)?.id ?? "").trim()
+    if (!rawId || rawId === "undefined" || rawId === "null" || !/^\d+$/.test(rawId)) {
+      setError("Invalid project id")
+      setLoading(false)
+      return
+    }
+
+    loadProject(rawId)
+  }, [mode.kind, (mode as any)?.id])
 
   const langTabs = useMemo(
     () => [
@@ -189,11 +209,16 @@ export function ProjectEditor({ mode }: { mode: Mode }) {
       fd.append("description_en", descriptionEn)
       fd.append("technologies", selectedTechnologies.join(", "))
       fd.append("genres", selectedGenres.join(", "))
-      fd.append("category", category)
+      const cats = selectedCategories.length ? selectedCategories : ["web"]
+      fd.append("categories", cats.join(", "))
+      fd.append("category", cats[0] || "web")
       fd.append("featured", toBoolString(featured))
       fd.append("project_url", projectUrl)
 
       if (imageFile) fd.append("image_file", imageFile)
+      for (const f of galleryFiles) fd.append("gallery_files", f)
+      if (replaceGallery) fd.append("replace_gallery", "true")
+      if (removedGallery.length) fd.append("remove_images", removedGallery.join(", "))
 
       const url =
         mode.kind === "edit"
@@ -218,6 +243,28 @@ export function ProjectEditor({ mode }: { mode: Mode }) {
     } finally {
       setSubmitting(false)
     }
+  }
+
+  const galleryUrls = useMemo(() => {
+    const combined = [currentImage, ...currentGallery].filter(Boolean)
+    return Array.from(new Set(combined))
+  }, [currentImage, currentGallery])
+
+  const visibleGalleryUrls = useMemo(() => {
+    if (!removedGallery.length) return galleryUrls
+    const removed = new Set(removedGallery)
+    return galleryUrls.filter((u) => !removed.has(u))
+  }, [galleryUrls, removedGallery])
+
+  function toggleRemoveImage(url: string) {
+    const u = String(url || "").trim()
+    if (!u) return
+    setRemovedGallery((prev) => {
+      const set = new Set(prev)
+      if (set.has(u)) set.delete(u)
+      else set.add(u)
+      return Array.from(set)
+    })
   }
 
   return (
@@ -312,21 +359,15 @@ export function ProjectEditor({ mode }: { mode: Mode }) {
           <div className="glass border border-white/10 rounded-2xl p-6">
             <div className="grid grid-cols-1 gap-5">
               <div>
-                <label className="block text-sm text-muted-foreground mb-2">{t("category")}</label>
-                <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl glass border border-white/10 text-white
-                             focus:outline-none focus:border-white/30 transition-colors bg-transparent"
-                >
-                  {(availableCategories.length ? availableCategories : ["web", "mobile", "iot", "aiml", "vrar"]).map(
-                    (c) => (
-                      <option key={c} value={c} className="bg-black">
-                        {c}
-                      </option>
-                    )
-                  )}
-                </select>
+                <MultiSelect
+                  label={`${t("category")} (multi)`}
+                  options={
+                    availableCategories.length ? availableCategories : ["web", "mobile", "iot", "aiml", "vrar"]
+                  }
+                  selected={selectedCategories}
+                  onChange={setSelectedCategories}
+                  emptyHint="Add options in Admin → Categories"
+                />
               </div>
 
               <div className="flex items-center justify-between">
@@ -376,6 +417,66 @@ export function ProjectEditor({ mode }: { mode: Mode }) {
                   <div className="mt-3 rounded-xl overflow-hidden border border-white/10 bg-black/40">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={currentImage} alt="current" className="w-full h-36 object-cover opacity-90" />
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm text-muted-foreground mb-2">Gallery images</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={(e) => setGalleryFiles(Array.from(e.target.files || []))}
+                  className="w-full px-4 py-3 rounded-xl glass border border-white/10 text-white
+                             focus:outline-none focus:border-white/30 transition-colors bg-transparent"
+                />
+
+                <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+                  <input
+                    type="checkbox"
+                    checked={replaceGallery}
+                    onChange={(e) => setReplaceGallery(e.target.checked)}
+                    className="h-4 w-4 accent-pink-500"
+                  />
+                  <span>Replace gallery on save</span>
+                </div>
+
+                {galleryFiles.length > 0 && (
+                  <div className="mt-2 text-xs text-muted-foreground">
+                    Selected: <span className="text-white/80">{galleryFiles.length}</span>
+                  </div>
+                )}
+
+                {mode.kind === "edit" && visibleGalleryUrls.length > 0 && (
+                  <div className="mt-3 grid grid-cols-3 gap-2">
+                    {visibleGalleryUrls.map((url) => {
+                      const willRemove = removedGallery.includes(url)
+                      return (
+                        <button
+                          key={url}
+                          type="button"
+                          onClick={() => toggleRemoveImage(url)}
+                          className={cn(
+                            "relative rounded-xl overflow-hidden border bg-black/40 aspect-[4/3]",
+                            willRemove ? "border-red-500/50 opacity-60" : "border-white/10 hover:border-white/20"
+                          )}
+                          title={willRemove ? "Will be removed" : "Click to remove"}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={url} alt="gallery" className="absolute inset-0 w-full h-full object-cover" />
+                          <div className="absolute top-1 right-1 px-2 py-1 rounded-lg text-[10px] bg-black/60 text-white/80">
+                            {willRemove ? "Undo" : "Remove"}
+                          </div>
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+
+                {removedGallery.length > 0 && (
+                  <div className="mt-2 text-xs text-red-300">
+                    Will remove: <span className="text-white/80">{removedGallery.length}</span>
                   </div>
                 )}
               </div>
@@ -496,4 +597,3 @@ function MultiSelect({
     </div>
   )
 }
-

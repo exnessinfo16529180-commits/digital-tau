@@ -16,6 +16,8 @@ CREATE TABLE IF NOT EXISTS projects (
 
   image TEXT NOT NULL DEFAULT '',
   category TEXT NOT NULL DEFAULT 'web',
+  categories TEXT[] NOT NULL DEFAULT '{}',
+  images TEXT[] NOT NULL DEFAULT '{}',
   featured BOOLEAN NOT NULL DEFAULT FALSE,
 
   project_url TEXT NOT NULL DEFAULT ''

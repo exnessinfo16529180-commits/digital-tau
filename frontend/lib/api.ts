@@ -9,7 +9,9 @@ export type BackendProject = {
   technologies?: string[] | string
   genres?: string[] | string
   image?: string
+  images?: string[] | string
   category?: string
+  categories?: string[] | string
   featured?: boolean
   projectUrl?: string
   project_url?: string
@@ -95,6 +97,10 @@ export function getStats() {
 export function getProjects(category?: string) {
   const q = category && category !== "all" ? `?category=${encodeURIComponent(category)}` : ""
   return apiGet<BackendProject[]>(`/api/projects${q}`)
+}
+
+export function getProject(id: string | number) {
+  return apiGet<BackendProject>(`/api/projects/${encodeURIComponent(String(id))}`)
 }
 
 export function getTechnologies() {

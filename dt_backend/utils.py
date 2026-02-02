@@ -85,6 +85,26 @@ def row_to_project(row: Dict[str, Any]) -> Dict[str, Any]:
     else:
         genres_list = []
 
+    categories = row.get("categories")
+    if categories is None:
+        categories_list: List[str] = []
+    elif isinstance(categories, list):
+        categories_list = [str(x) for x in categories]
+    elif isinstance(categories, str):
+        categories_list = _parse_csv_tags(categories)
+    else:
+        categories_list = []
+
+    images = row.get("images")
+    if images is None:
+        images_list: List[str] = []
+    elif isinstance(images, list):
+        images_list = [str(x) for x in images]
+    elif isinstance(images, str):
+        images_list = _parse_csv_tags(images)
+    else:
+        images_list = []
+
     return {
         "id": str(row.get("id")),
         "titleRu": row.get("title_ru"),
@@ -96,7 +116,9 @@ def row_to_project(row: Dict[str, Any]) -> Dict[str, Any]:
         "technologies": tech_list,
         "genres": genres_list,
         "image": row.get("image"),
+        "images": images_list,
         "category": row.get("category"),
+        "categories": categories_list,
         "featured": bool(row.get("featured")),
         "projectUrl": row.get("project_url"),
     }
