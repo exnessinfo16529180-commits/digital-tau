@@ -67,8 +67,8 @@ export interface Technology {
 export const technologies: Technology[] = [
   { name: "React", icon: "react", color: "#61DAFB" },
   { name: "Python", icon: "python", color: "#14B8A6" },
-  { name: "Node.js", icon: "nodejs", color: "#FF9800" },
-  { name: "TensorFlow", icon: "tensorflow", color: "#E91E63" },
+  { name: "Node.js", icon: "nodejs", color: "#9F2F55" },
+  { name: "TensorFlow", icon: "tensorflow", color: "#7A1F3D" },
   { name: "Arduino", icon: "arduino", color: "#6B7280" },
   { name: "Unity", icon: "unity", color: "#A855F7" },
   { name: "MongoDB", icon: "mongodb", color: "#22C55E" },

@@ -36,7 +36,7 @@ export function HeroSection() {
         {particles.map((p) => (
           <div
             key={p.id}
-            className="absolute w-1 h-1 rounded-full bg-gradient-to-r from-pink-500 to-orange-500 opacity-30 animate-float"
+            className="absolute w-1 h-1 rounded-full bg-gradient-to-r from-rose-700 to-red-900 opacity-30 animate-float"
             style={{
               left: p.left,
               top: p.top,

@@ -76,12 +76,12 @@ export function Header() {
               <div className="w-10 h-10 rounded-lg overflow-hidden">
                 <img
                   src="/images/logo.jpeg"
-                  alt="TAU University Logo"
+                  alt="Turan-Astana University Logo"
                   className="w-full h-full object-cover"
                 />
               </div>
               <span className="font-bold text-white hidden sm:block group-hover:gradient-text transition-all duration-300">
-                TAU UNIVERSITY
+                Turan-Astana University
               </span>
             </Link>
 
@@ -136,15 +136,15 @@ export function Header() {
                   className={cn(
                     "relative p-2 rounded-lg transition-all duration-300",
                     "bg-white/5 border border-white/10 hover:border-white/20",
-                    "hover:bg-gradient-to-r hover:from-[#E91E63]/20 hover:to-[#FF9800]/20",
-                    isAuthenticated && "border-[#E91E63]/30"
+                    "hover:bg-gradient-to-r hover:from-[#7A1F3D]/30 hover:to-[#B34A6C]/20",
+                    isAuthenticated && "border-[#7A1F3D]/30"
                   )}
                   title={t("adminPanel")}
                 >
                   <ShieldCheck size={18} className="text-white/70" />
-                  {/* Green dot indicator when logged in */}
+                  {/* Dot indicator when logged in */}
                   {isAuthenticated && (
-                    <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-[#0a0a0a]" />
+                    <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-[#B34A6C] rounded-full border-2 border-[#0a0a0a]" />
                   )}
                 </button>
 
@@ -251,13 +251,13 @@ export function Header() {
                   className={cn(
                     "relative flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm",
                     "bg-white/5 border border-white/10",
-                    isAuthenticated && "border-[#E91E63]/30"
+                    isAuthenticated && "border-[#7A1F3D]/30"
                   )}
                 >
                   <ShieldCheck size={16} className="text-white/70" />
                   <span className="text-white/70">{t("admin")}</span>
                   {isAuthenticated && (
-                    <span className="w-2 h-2 bg-green-500 rounded-full" />
+                    <span className="w-2 h-2 bg-[#B34A6C] rounded-full" />
                   )}
                 </button>
               </div>

@@ -55,9 +55,9 @@ export default function AdminDashboard() {
   }
 
   const dashboardStats = [
-    { label: t("totalProjects"), value: safeStats.projects, icon: FolderKanban, color: "#E91E63" },
-    { label: t("totalStudents"), value: safeStats.students, icon: Users, color: "#FF9800" },
-    { label: t("activeTechnologies"), value: safeStats.technologies, icon: Cpu, color: "#FFC107" },
+    { label: t("totalProjects"), value: safeStats.projects, icon: FolderKanban, color: "#7A1F3D" },
+    { label: t("totalStudents"), value: safeStats.students, icon: Users, color: "#9F2F55" },
+    { label: t("activeTechnologies"), value: safeStats.technologies, icon: Cpu, color: "#B34A6C" },
   ]
 
   const categories = ["AI/ML", "IoT", "Web", "Mobile", "VR/AR"] as const
@@ -121,7 +121,7 @@ export default function AdminDashboard() {
         {/* Recent Activity */}
         <div className="glass border border-white/10 rounded-2xl p-6">
           <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-            <Clock size={20} className="text-[#E91E63]" />
+            <Clock size={20} className="text-[#7A1F3D]" />
             {t("recentActivity")}
           </h2>
 

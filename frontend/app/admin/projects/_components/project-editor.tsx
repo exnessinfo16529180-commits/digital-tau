@@ -379,7 +379,7 @@ export function ProjectEditor({ mode }: { mode: Mode }) {
                   type="checkbox"
                   checked={featured}
                   onChange={(e) => setFeatured(e.target.checked)}
-                  className="h-5 w-5 accent-pink-500"
+                  className="h-5 w-5 accent-rose-700"
                 />
               </div>
 
@@ -437,7 +437,7 @@ export function ProjectEditor({ mode }: { mode: Mode }) {
                     type="checkbox"
                     checked={replaceGallery}
                     onChange={(e) => setReplaceGallery(e.target.checked)}
-                    className="h-4 w-4 accent-pink-500"
+                    className="h-4 w-4 accent-rose-700"
                   />
                   <span>Replace gallery on save</span>
                 </div>
@@ -562,7 +562,7 @@ function MultiSelect({
                   className={cn(
                     "px-3 py-1 rounded-full text-sm border transition-colors",
                     active
-                      ? "border-pink-500/60 bg-pink-500/20 text-white"
+                      ? "border-rose-700/70 bg-rose-900/30 text-white"
                       : "border-white/10 hover:border-white/20 text-muted-foreground hover:text-white"
                   )}
                 >

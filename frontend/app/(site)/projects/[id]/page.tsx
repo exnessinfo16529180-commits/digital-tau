@@ -238,7 +238,7 @@ export default function ProjectDetailPage() {
                     onClick={() => setIndex(i)}
                     className={cn(
                       "relative rounded-xl overflow-hidden aspect-[4/3] border bg-black/40",
-                      i === index ? "border-pink-500/60" : "border-white/10 hover:border-white/20"
+                      i === index ? "border-rose-700/70" : "border-white/10 hover:border-white/20"
                     )}
                     aria-label={`image ${i + 1}`}
                     >
@@ -266,7 +266,7 @@ export default function ProjectDetailPage() {
                 </span>
               )}
               {Boolean(project.featured) && (
-                <span className="px-3 py-1 rounded-full text-xs font-medium border border-pink-500/40 bg-pink-500/10 text-pink-200">
+                <span className="px-3 py-1 rounded-full text-xs font-medium border border-rose-700/40 bg-rose-900/20 text-rose-200">
                   Featured
                 </span>
               )}

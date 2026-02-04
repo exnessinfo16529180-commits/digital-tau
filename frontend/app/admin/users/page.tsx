@@ -31,8 +31,8 @@ export default function AdminUsersPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="glass border border-white/10 rounded-2xl p-6">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-pink-500/20 flex items-center justify-center">
-              <Users size={24} className="text-pink-500" />
+            <div className="w-12 h-12 rounded-xl bg-rose-900/30 flex items-center justify-center">
+              <Users size={24} className="text-rose-400" />
             </div>
             <div>
               <p className="text-2xl font-bold text-white">{users.length}</p>
@@ -42,8 +42,8 @@ export default function AdminUsersPage() {
         </div>
         <div className="glass border border-white/10 rounded-2xl p-6">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-orange-500/20 flex items-center justify-center">
-              <Shield size={24} className="text-orange-500" />
+            <div className="w-12 h-12 rounded-xl bg-rose-800/30 flex items-center justify-center">
+              <Shield size={24} className="text-rose-300" />
             </div>
             <div>
               <p className="text-2xl font-bold text-white">1</p>
@@ -53,8 +53,8 @@ export default function AdminUsersPage() {
         </div>
         <div className="glass border border-white/10 rounded-2xl p-6">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center">
-              <UserCheck size={24} className="text-green-500" />
+            <div className="w-12 h-12 rounded-xl bg-rose-950/30 flex items-center justify-center">
+              <UserCheck size={24} className="text-rose-200" />
             </div>
             <div>
               <p className="text-2xl font-bold text-white">{users.length}</p>
@@ -90,15 +90,15 @@ export default function AdminUsersPage() {
                   <td className="p-4 text-muted-foreground">{user.email}</td>
                   <td className="p-4">
                     <span className={`px-3 py-1 text-xs font-medium rounded-full ${
-                      user.role === "Admin" ? "bg-pink-500/20 text-pink-400" :
-                      user.role === "Faculty" ? "bg-orange-500/20 text-orange-400" :
-                      "bg-blue-500/20 text-blue-400"
+                      user.role === "Admin" ? "bg-rose-900/30 text-rose-300" :
+                      user.role === "Faculty" ? "bg-rose-800/30 text-rose-200" :
+                      "bg-rose-700/20 text-rose-200"
                     }`}>
                       {roleLabel(user.role)}
                     </span>
                   </td>
                   <td className="p-4">
-                    <span className="px-3 py-1 text-xs font-medium rounded-full bg-green-500/20 text-green-400">
+                    <span className="px-3 py-1 text-xs font-medium rounded-full bg-rose-950/40 text-rose-200">
                       {t("active")}
                     </span>
                   </td>

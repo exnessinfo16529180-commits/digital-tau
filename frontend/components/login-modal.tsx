@@ -119,7 +119,7 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
                   "w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10",
                   "text-white placeholder:text-muted-foreground",
                   "focus:outline-none focus:border-transparent focus:ring-2",
-                  "focus:ring-[#E91E63]/50 transition-all duration-300"
+                  "focus:ring-[#7A1F3D]/50 transition-all duration-300"
                 )}
                 required
               />
@@ -140,7 +140,7 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
                     "w-full px-4 py-3 pr-12 rounded-xl bg-white/5 border border-white/10",
                     "text-white placeholder:text-muted-foreground",
                     "focus:outline-none focus:border-transparent focus:ring-2",
-                    "focus:ring-[#E91E63]/50 transition-all duration-300"
+                    "focus:ring-[#7A1F3D]/50 transition-all duration-300"
                   )}
                   required
                 />

@@ -115,7 +115,7 @@ export default function AboutPage() {
                 >
                   <div className="flex items-start gap-3">
                     <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
-                      <feature.icon size={20} className="text-[#E91E63]" />
+                      <feature.icon size={20} className="text-[#7A1F3D]" />
                     </div>
                     <div>
                       <h4 className="font-semibold text-white mb-1">

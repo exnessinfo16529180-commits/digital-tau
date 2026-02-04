@@ -17,8 +17,8 @@ export default function AdminSettingsPage() {
         {/* Language Settings */}
         <div className="glass border border-white/10 rounded-2xl p-6">
           <div className="flex items-center gap-4 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-pink-500/20 flex items-center justify-center">
-              <Globe size={20} className="text-pink-500" />
+            <div className="w-10 h-10 rounded-xl bg-rose-900/30 flex items-center justify-center">
+              <Globe size={20} className="text-rose-400" />
             </div>
             <div>
               <h3 className="font-semibold text-white">{t("language")}</h3>
@@ -45,8 +45,8 @@ export default function AdminSettingsPage() {
         {/* Notification Settings */}
         <div className="glass border border-white/10 rounded-2xl p-6">
           <div className="flex items-center gap-4 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-orange-500/20 flex items-center justify-center">
-              <Bell size={20} className="text-orange-500" />
+            <div className="w-10 h-10 rounded-xl bg-rose-800/30 flex items-center justify-center">
+              <Bell size={20} className="text-rose-300" />
             </div>
             <div>
               <h3 className="font-semibold text-white">{t("notifications")}</h3>
@@ -56,11 +56,11 @@ export default function AdminSettingsPage() {
           <div className="space-y-4">
             <label className="flex items-center justify-between cursor-pointer">
               <span className="text-muted-foreground">{t("emailNotifications")}</span>
-              <input type="checkbox" defaultChecked className="w-5 h-5 accent-pink-500" />
+              <input type="checkbox" defaultChecked className="w-5 h-5 accent-rose-700" />
             </label>
             <label className="flex items-center justify-between cursor-pointer">
               <span className="text-muted-foreground">{t("projectUpdates")}</span>
-              <input type="checkbox" defaultChecked className="w-5 h-5 accent-pink-500" />
+              <input type="checkbox" defaultChecked className="w-5 h-5 accent-rose-700" />
             </label>
           </div>
         </div>
@@ -68,8 +68,8 @@ export default function AdminSettingsPage() {
         {/* Security Settings */}
         <div className="glass border border-white/10 rounded-2xl p-6">
           <div className="flex items-center gap-4 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center">
-              <Shield size={20} className="text-green-500" />
+            <div className="w-10 h-10 rounded-xl bg-rose-950/30 flex items-center justify-center">
+              <Shield size={20} className="text-rose-200" />
             </div>
             <div>
               <h3 className="font-semibold text-white">{t("security")}</h3>
@@ -84,8 +84,8 @@ export default function AdminSettingsPage() {
         {/* Theme Settings */}
         <div className="glass border border-white/10 rounded-2xl p-6">
           <div className="flex items-center gap-4 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center">
-              <Palette size={20} className="text-purple-500" />
+            <div className="w-10 h-10 rounded-xl bg-rose-700/20 flex items-center justify-center">
+              <Palette size={20} className="text-rose-400" />
             </div>
             <div>
               <h3 className="font-semibold text-white">{t("theme")}</h3>

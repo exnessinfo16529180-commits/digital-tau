@@ -6,39 +6,39 @@
 :root {
   --background: #000000;
   --foreground: #ffffff;
-  --card: rgba(26, 26, 26, 0.5);
+  --card: rgba(41, 12, 24, 0.45);
   --card-foreground: #ffffff;
-  --popover: #1a1a1a;
+  --popover: #1f0b14;
   --popover-foreground: #ffffff;
-  --primary: #E91E63;
+  --primary: #7a1f3d;
   --primary-foreground: #ffffff;
-  --secondary: #1a1a1a;
+  --secondary: #220d15;
   --secondary-foreground: #ffffff;
-  --muted: #1a1a1a;
-  --muted-foreground: #B0B0B0;
-  --accent: #C2185B;
+  --muted: #1f0b14;
+  --muted-foreground: #bda7af;
+  --accent: #5a142d;
   --accent-foreground: #ffffff;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
   --border: rgba(255, 255, 255, 0.1);
   --input: rgba(255, 255, 255, 0.1);
-  --ring: #E91E63;
+  --ring: #9f2f55;
   --radius: 0.75rem;
   
   /* Gradient colors */
-  --gradient-pink: #E91E63;
-  --gradient-orange: #FF9800;
-  --gradient-yellow: #FFC107;
+  --gradient-pink: #4b1028;
+  --gradient-orange: #7a1f3d;
+  --gradient-yellow: #b34a6c;
   
   /* Sidebar */
   --sidebar: #0a0a0a;
   --sidebar-foreground: #ffffff;
-  --sidebar-primary: #E91E63;
+  --sidebar-primary: #7a1f3d;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1a1a1a;
+  --sidebar-accent: #1f0b14;
   --sidebar-accent-foreground: #ffffff;
   --sidebar-border: rgba(255, 255, 255, 0.1);
-  --sidebar-ring: #E91E63;
+  --sidebar-ring: #9f2f55;
 }
 
 @theme inline {
@@ -88,7 +88,7 @@
 
 /* Gradient text utility */
 .gradient-text {
-  background: linear-gradient(90deg, #E91E63, #FF9800, #FFC107);
+  background: linear-gradient(90deg, var(--gradient-pink), var(--gradient-orange), var(--gradient-yellow));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -96,7 +96,7 @@
 
 /* Gradient background utility */
 .gradient-bg {
-  background: linear-gradient(90deg, #E91E63, #FF9800, #FFC107);
+  background: linear-gradient(90deg, var(--gradient-pink), var(--gradient-orange), var(--gradient-yellow));
 }
 
 /* Gradient border utility */
@@ -110,7 +110,7 @@
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background: linear-gradient(90deg, #E91E63, #FF9800, #FFC107);
+  background: linear-gradient(90deg, var(--gradient-pink), var(--gradient-orange), var(--gradient-yellow));
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -118,7 +118,7 @@
 
 /* Glass effect */
 .glass {
-  background: rgba(26, 26, 26, 0.5);
+  background: rgba(31, 11, 20, 0.55);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
@@ -155,7 +155,7 @@
 
 /* Glow effect on hover */
 .glow-hover:hover {
-  box-shadow: 0 0 20px rgba(233, 30, 99, 0.5), 0 0 40px rgba(255, 152, 0, 0.3);
+  box-shadow: 0 0 20px rgba(122, 31, 61, 0.45), 0 0 40px rgba(179, 74, 108, 0.25);
 }
 
 /* Counter animation */
@@ -184,10 +184,10 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #E91E63, #FF9800);
+  background: linear-gradient(180deg, var(--gradient-orange), var(--gradient-yellow));
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #C2185B, #E91E63);
+  background: linear-gradient(180deg, var(--accent), var(--gradient-orange));
 }

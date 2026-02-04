@@ -99,9 +99,9 @@ export function MatrixBackground() {
 
           if (y > 0 && y < canvas.height) {
             const gradient = ctx.createLinearGradient(0, y - 10, 0, y + 10)
-            gradient.addColorStop(0, `rgba(233, 30, 99, ${column.opacity})`)
-            gradient.addColorStop(0.5, `rgba(255, 152, 0, ${column.opacity})`)
-            gradient.addColorStop(1, `rgba(255, 193, 7, ${column.opacity * 0.5})`)
+            gradient.addColorStop(0, `rgba(75, 16, 40, ${column.opacity})`)
+            gradient.addColorStop(0.5, `rgba(122, 31, 61, ${column.opacity})`)
+            gradient.addColorStop(1, `rgba(179, 74, 108, ${column.opacity * 0.5})`)
 
             ctx.fillStyle = gradient
             ctx.fillText(char, column.x, y)

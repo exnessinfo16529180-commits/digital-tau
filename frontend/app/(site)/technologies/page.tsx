@@ -187,7 +187,7 @@ export default function TechnologiesPage() {
               key={tech.name}
               className="group glass border border-white/10 rounded-2xl p-6 text-center
                          hover:border-white/20 hover:-translate-y-1 transition-all duration-300
-                         hover:shadow-lg hover:shadow-pink-500/10"
+                         hover:shadow-lg hover:shadow-rose-900/20"
             >
               <div className="flex justify-center mb-4">
                 <TechIcon name={tech.iconKey} color={tech.color} />

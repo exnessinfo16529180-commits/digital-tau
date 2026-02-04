@@ -36,7 +36,7 @@ export function Footer() {
 
           {/* Contacts */}
           <div>
-            <h3 className="font-bold text-lg text-[#FF9800] mb-4">{t("contacts")}</h3>
+            <h3 className="font-bold text-lg text-[#B34A6C] mb-4">{t("contacts")}</h3>
             <a
               href="mailto:contact@tau.edu.kz"
               className="flex items-center gap-2 text-sm text-muted-foreground hover:text-white transition-colors"
@@ -48,7 +48,7 @@ export function Footer() {
 
           {/* Social Media */}
           <div>
-            <h3 className="font-bold text-lg text-[#E91E63] mb-4">{t("socialMedia")}</h3>
+            <h3 className="font-bold text-lg text-[#7A1F3D] mb-4">{t("socialMedia")}</h3>
             <div className="flex items-center gap-4">
               <a
                 href="https://github.com"
@@ -77,9 +77,9 @@ export function Footer() {
             </div>
           </div>
 
-          {/* TAU University */}
+          {/* Turan-Astana University */}
           <div>
-            <h3 className="font-bold text-lg text-white mb-4">TAU University</h3>
+            <h3 className="font-bold text-lg text-white mb-4">Turan-Astana University</h3>
             <p className="text-sm text-muted-foreground">{t("universityName")}</p>
             <p className="text-sm text-muted-foreground">{t("tarazKazakhstan")}</p>
           </div>

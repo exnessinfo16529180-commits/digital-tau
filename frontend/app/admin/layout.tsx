@@ -66,11 +66,11 @@ function AdminSidebar() {
             <div className="w-10 h-10 rounded-lg overflow-hidden">
               <img
                 src="/images/logo.jpeg"
-                alt="TAU University Logo"
+                alt="Turan-Astana University Logo"
                 className="w-full h-full object-cover"
               />
             </div>
-            <span className="font-bold text-white">TAU Admin</span>
+            <span className="font-bold text-white">Turan-Astana Admin</span>
           </Link>
         </div>
 
@@ -146,7 +146,7 @@ function AdminProtectedContent({ children }: { children: React.ReactNode }) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <Loader2 size={40} className="animate-spin text-[#E91E63]" />
+          <Loader2 size={40} className="animate-spin text-[#7A1F3D]" />
           <p className="text-muted-foreground">{t("loading")}</p>
         </div>
       </div>
