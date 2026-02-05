@@ -1,9 +1,9 @@
 "use client"
 
 import Link from "next/link"
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { ChevronLeft, ChevronRight, ExternalLink, X } from "lucide-react"
+import { ChevronLeft, ChevronRight, ExternalLink, Maximize2, X } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 import { getProject, type BackendProject } from "@/lib/api"
@@ -58,6 +58,7 @@ export default function ProjectDetailPage() {
   const [index, setIndex] = useState(0)
   const [brokenImages, setBrokenImages] = useState<string[]>([])
   const [viewerOpen, setViewerOpen] = useState(false)
+  const [slideDir, setSlideDir] = useState<"next" | "prev">("next")
 
   useEffect(() => {
     let alive = true
@@ -125,15 +126,17 @@ export default function ProjectDetailPage() {
     if (index >= images.length) setIndex(0)
   }, [images.length, index])
 
-  function prev() {
-    if (!images.length) return
+  const prev = useCallback(() => {
+    if (images.length <= 1) return
+    setSlideDir("prev")
     setIndex((i) => (i - 1 + images.length) % images.length)
-  }
+  }, [images.length])
 
-  function next() {
-    if (!images.length) return
+  const next = useCallback(() => {
+    if (images.length <= 1) return
+    setSlideDir("next")
     setIndex((i) => (i + 1) % images.length)
-  }
+  }, [images.length])
 
   useEffect(() => {
     if (!viewerOpen) return
@@ -152,7 +155,7 @@ export default function ProjectDetailPage() {
       window.removeEventListener("keydown", onKeyDown)
       document.body.style.overflow = prevOverflow
     }
-  }, [viewerOpen, images.length])
+  }, [viewerOpen, next, prev])
 
   const current = images[index] || ""
   const projectUrl = project ? safeProjectUrl(project) : ""
@@ -198,9 +201,14 @@ export default function ProjectDetailPage() {
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
+                key={current}
                 src={current}
                 alt={title}
-                className="absolute inset-0 w-full h-full object-contain"
+                className={cn(
+                  "absolute inset-0 w-full h-full object-contain",
+                  "animate-in fade-in duration-300",
+                  slideDir === "next" ? "slide-in-from-right-3" : "slide-in-from-left-3"
+                )}
                 onError={() => markBroken(current)}
               />
 
@@ -270,9 +278,14 @@ export default function ProjectDetailPage() {
               {current ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
+                  key={current}
                   src={current}
                   alt={title}
-                  className="absolute inset-0 w-full h-full object-cover cursor-zoom-in"
+                  className={cn(
+                    "absolute inset-0 w-full h-full object-cover cursor-zoom-in",
+                    "animate-in fade-in duration-300",
+                    slideDir === "next" ? "slide-in-from-right-2" : "slide-in-from-left-2"
+                  )}
                   onError={() => markBroken(current)}
                   onClick={() => setViewerOpen(true)}
                 />
@@ -280,6 +293,18 @@ export default function ProjectDetailPage() {
                 <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
                   No images
                 </div>
+              )}
+
+              {current && (
+                <button
+                  type="button"
+                  onClick={() => setViewerOpen(true)}
+                  className="absolute bottom-3 right-3 h-10 w-10 rounded-full bg-black/70 border border-white/10 text-white hover:border-white/20 transition-colors"
+                  aria-label="Fullscreen"
+                  title="Fullscreen"
+                >
+                  <Maximize2 className="mx-auto" size={18} />
+                </button>
               )}
 
               {images.length > 1 && (
@@ -312,7 +337,10 @@ export default function ProjectDetailPage() {
                   <button
                     key={url}
                     type="button"
-                    onClick={() => setIndex(i)}
+                    onClick={() => {
+                      setSlideDir(i > index ? "next" : "prev")
+                      setIndex(i)
+                    }}
                     className={cn(
                       "relative rounded-xl overflow-hidden aspect-[4/3] border bg-black/40",
                       i === index ? "border-rose-700/70" : "border-white/10 hover:border-white/20"
@@ -334,7 +362,11 @@ export default function ProjectDetailPage() {
 
           {/* Details */}
           <div className="glass border border-white/10 rounded-2xl p-6">
-            <h1 className="text-3xl md:text-4xl font-bold gradient-text mb-3">{title}</h1>
+            <h1 className="text-3xl md:text-4xl font-bold mb-3">
+              <span className="inline-block gradient-text drop-shadow-[0_2px_14px_rgba(0,0,0,0.75)] bg-black/35 border border-white/10 px-3 py-2 rounded-2xl">
+                {title}
+              </span>
+            </h1>
 
             <div className="flex flex-wrap items-center gap-2 mb-5">
               {project.category && (
