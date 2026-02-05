@@ -123,6 +123,12 @@
   -webkit-backdrop-filter: blur(10px);
 }
 
+.glass-dark {
+  background: rgba(10, 10, 16, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
 /* Matrix code animation */
 @keyframes matrix-fall {
   0% {
