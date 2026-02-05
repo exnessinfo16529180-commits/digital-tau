@@ -4,8 +4,9 @@ import { useEffect, useMemo, useState } from "react"
 import { Search } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
 import { cn, stripHtml } from "@/lib/utils"
-import { getProjects, type BackendProject } from "@/lib/api"
+import { getCategories, getProjects, type BackendCategory, type BackendProject } from "@/lib/api"
 import { ProjectCard } from "@/components/project-card"
+import { extractCategoryCodes, formatCategoryLabel, mapCategory, normalizeCategoryCode } from "@/lib/mappers/project.mapper"
 import type { UiProject } from "@/lib/mappers/project.mapper"
 
 // -------- helpers --------
@@ -19,17 +20,7 @@ function normalizeImage(img?: string) {
   return `${API_BASE}/${img}`
 }
 
-type UiCategory = "AI/ML" | "IoT" | "Web" | "Mobile" | "VR/AR"
-
-function mapCategory(cat?: string | null): UiCategory {
-  const c = (cat || "").toLowerCase()
-  if (c === "aiml" || c === "ai/ml" || c === "ai") return "AI/ML"
-  if (c === "iot") return "IoT"
-  if (c === "web") return "Web"
-  if (c === "mobile") return "Mobile"
-  if (c === "vrar" || c === "vr/ar") return "VR/AR"
-  return "Web"
-}
+type UiProjectWithCodes = UiProject & { categoryCodes: string[] }
 
 function pickLangText(p: BackendProject, lang: "ru" | "kz" | "en") {
   const title =
@@ -49,7 +40,7 @@ function pickLangText(p: BackendProject, lang: "ru" | "kz" | "en") {
   return { title, description: stripHtml(descriptionRaw) }
 }
 
-function toUiProject(p: BackendProject, lang: "ru" | "kz" | "en"): UiProject {
+function toUiProject(p: BackendProject, lang: "ru" | "kz" | "en"): UiProjectWithCodes {
   const { title, description } = pickLangText(p, lang)
 
   const techStack = Array.isArray(p.technologies)
@@ -59,12 +50,15 @@ function toUiProject(p: BackendProject, lang: "ru" | "kz" | "en"): UiProject {
       : []
 
   const projectUrl = (p.projectUrl ?? (p as any).project_url ?? "") as string
+  const categoryCodes = extractCategoryCodes(p)
+  const primaryCategory = p.category ?? categoryCodes[0] ?? undefined
 
   return {
     id: String(p.id),
     title,
     description,
-    category: mapCategory(p.category ?? undefined),
+    category: mapCategory(primaryCategory),
+    categoryCodes,
     techStack,
     image: normalizeImage(p.image ?? undefined),
     projectUrl,
@@ -83,10 +77,11 @@ export default function ProjectsPage() {
   const lang: "ru" | "kz" | "en" = (language as "ru" | "kz" | "en") || "en"
 
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState<UiCategory | "all">("all")
+  const [selectedCategory, setSelectedCategory] = useState<string | "all">("all")
 
   const [loading, setLoading] = useState(true)
   const [items, setItems] = useState<BackendProject[]>([])
+  const [categoryItems, setCategoryItems] = useState<BackendCategory[]>([])
   const [error, setError] = useState<string | null>(null)
 
   // 1) грузим проекты из API
@@ -96,12 +91,17 @@ export default function ProjectsPage() {
       try {
         setLoading(true)
         setError(null)
-        const data = await getProjects()
+        const [projects, categories] = await Promise.all([
+          getProjects(),
+          getCategories().catch(() => [] as BackendCategory[]),
+        ])
         if (!alive) return
-        setItems(Array.isArray(data) ? data : [])
+        setItems(Array.isArray(projects) ? projects : [])
+        setCategoryItems(Array.isArray(categories) ? categories : [])
       } catch (e: any) {
         if (!alive) return
         setItems([])
+        setCategoryItems([])
         setError(e?.message || t("failedToLoadProjects"))
       } finally {
         if (alive) setLoading(false)
@@ -111,20 +111,39 @@ export default function ProjectsPage() {
     return () => {
       alive = false
     }
-  }, [])
+  }, [t])
 
   // 2) переводим проекты к виду карточки (UiProject)
-  const uiProjects = useMemo(() => {
+  const uiProjects = useMemo<UiProjectWithCodes[]>(() => {
     const mapped = (Array.isArray(items) ? items : []).map((p) => toUiProject(p, lang))
     return mapped.filter((p) => isValidProjectId(p.id))
   }, [items, lang])
 
-  // 3) категории берём из проектов БД
+  // 3) категории показываем только те, по которым есть проекты
   const categories = useMemo(() => {
-    const set = new Set<UiCategory>()
-    uiProjects.forEach((p) => set.add(p.category))
-    return Array.from(set)
-  }, [uiProjects])
+    const byCode = new Map<string, BackendCategory>()
+    for (const c of Array.isArray(categoryItems) ? categoryItems : []) {
+      const code = normalizeCategoryCode(c?.code)
+      if (code) byCode.set(code, c)
+    }
+
+    const usedCodes = new Set<string>()
+    for (const p of uiProjects) {
+      for (const code of p.categoryCodes) usedCodes.add(code)
+    }
+
+    const labelFor = (code: string) => {
+      const meta = byCode.get(code)
+      if (!meta) return formatCategoryLabel(code)
+      if (lang === "ru") return String(meta.nameRu || meta.code || code)
+      if (lang === "kz") return String(meta.nameKz || meta.code || code)
+      return String(meta.nameEn || meta.code || code)
+    }
+
+    return Array.from(usedCodes)
+      .map((code) => ({ code, label: labelFor(code) }))
+      .sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: "base" }))
+  }, [uiProjects, categoryItems, lang])
 
   // 4) фильтрация + поиск
   const filteredProjects = useMemo(() => {
@@ -132,7 +151,7 @@ export default function ProjectsPage() {
 
     return uiProjects.filter((project) => {
       const matchesCategory =
-        selectedCategory === "all" || project.category === selectedCategory
+        selectedCategory === "all" || project.categoryCodes.includes(selectedCategory)
 
       const matchesSearch =
         !q ||
@@ -190,16 +209,16 @@ export default function ProjectsPage() {
 
             {categories.map((category) => (
               <button
-                key={category}
-                onClick={() => setSelectedCategory(category)}
+                key={category.code}
+                onClick={() => setSelectedCategory(category.code)}
                 className={cn(
                   "px-4 py-2 rounded-full text-sm font-medium transition-all duration-300",
-                  selectedCategory === category
+                  selectedCategory === category.code
                     ? "gradient-bg text-white"
                     : "glass border border-white/10 text-white/70 hover:text-white hover:border-white/30"
                 )}
               >
-                {category}
+                {category.label}
               </button>
             ))}
           </div>

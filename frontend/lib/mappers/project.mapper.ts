@@ -3,7 +3,7 @@
 import type { BackendProject } from "@/lib/api"
 import { stripHtml } from "@/lib/utils"
 
-export type UiCategory = "AI/ML" | "IoT" | "Web" | "Mobile" | "VR/AR"
+export type UiCategory = string
 
 export type UiProject = {
   id: string
@@ -16,9 +16,13 @@ export type UiProject = {
   featured: boolean
 }
 
-// backend category (aiml/iot/web/mobile/vrar) -> UI category (AI/ML/IoT/...)
-export function mapCategory(input?: string | null): UiCategory {
-  const v = String(input ?? "").toLowerCase().trim()
+export function normalizeCategoryCode(input?: string | null): string {
+  return String(input ?? "").trim().toLowerCase()
+}
+
+export function formatCategoryLabel(code: string): string {
+  const v = normalizeCategoryCode(code)
+  if (!v) return "Web"
 
   if (v === "aiml" || v === "ai" || v === "ml" || v === "ai/ml") return "AI/ML"
   if (v === "iot") return "IoT"
@@ -26,8 +30,34 @@ export function mapCategory(input?: string | null): UiCategory {
   if (v === "mobile") return "Mobile"
   if (v === "vrar" || v === "vr/ar" || v === "vr" || v === "ar") return "VR/AR"
 
-  // дефолт
-  return "Web"
+  const spaced = v.replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim()
+  return spaced ? spaced.charAt(0).toUpperCase() + spaced.slice(1) : "Web"
+}
+
+// backend category (aiml/iot/web/mobile/vrar/...) -> UI label
+export function mapCategory(input?: string | null): UiCategory {
+  const v = normalizeCategoryCode(input)
+  return v ? formatCategoryLabel(v) : "Web"
+}
+
+export function extractCategoryCodes(p: BackendProject): string[] {
+  const out: string[] = []
+
+  const push = (value: unknown) => {
+    const v = normalizeCategoryCode(String(value ?? ""))
+    if (v) out.push(v)
+  }
+
+  push(p.category)
+
+  const cats = (p as any).categories as unknown
+  if (Array.isArray(cats)) {
+    for (const c of cats) push(c)
+  } else if (typeof cats === "string") {
+    for (const part of cats.split(",")) push(part)
+  }
+
+  return Array.from(new Set(out))
 }
 
 function pickByLang(

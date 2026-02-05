@@ -23,6 +23,14 @@ export type Stats = {
   technologies: number
 }
 
+export type BackendCategory = {
+  id?: number | string
+  code: string
+  nameRu?: string
+  nameKz?: string
+  nameEn?: string
+}
+
 export type LoginResponse = {
   access_token?: string
   token?: string
@@ -105,6 +113,10 @@ export function getProject(id: string | number) {
 
 export function getTechnologies() {
   return apiGet<string[]>("/api/technologies")
+}
+
+export function getCategories() {
+  return apiGet<BackendCategory[]>("/api/categories")
 }
 
 // ---- admin/auth ----
