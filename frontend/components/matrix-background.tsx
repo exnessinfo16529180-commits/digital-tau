@@ -58,10 +58,11 @@ const MATRIX = {
   xJitter: 18,
   font: "13px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
   lineHeight: 20,
-  fadeFill: "rgba(26, 26, 36, 0.10)",
+  fadeFill: "rgba(10, 10, 16, 0.22)",
   opacityMin: 0.12,
   opacityMax: 0.26,
   shadowBlur: 8,
+  canvasBg: "rgba(10, 10, 16, 0.18)",
 } as const
 
 export function MatrixBackground() {
@@ -151,7 +152,7 @@ export function MatrixBackground() {
     <canvas
       ref={canvasRef}
       className="fixed inset-0 pointer-events-none z-0"
-      style={{ background: "transparent" }}
+      style={{ background: MATRIX.canvasBg }}
     />
   )
 }
