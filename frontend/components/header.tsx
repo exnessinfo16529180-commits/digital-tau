@@ -68,7 +68,7 @@ export function Header() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 glass-dark border-b border-white/10">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-[#0b0b10] border-b border-white/10">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
@@ -144,13 +144,13 @@ export function Header() {
                   <ShieldCheck size={18} className="text-white/70" />
                   {/* Dot indicator when logged in */}
                   {isAuthenticated && (
-                    <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-[#B34A6C] rounded-full border-2 border-[#101014]" />
+                    <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-[#B34A6C] rounded-full border-2 border-[#0b0b10]" />
                   )}
                 </button>
 
                 {/* Admin Dropdown */}
                 {adminDropdownOpen && isAuthenticated && (
-                  <div className="absolute right-0 top-full mt-2 w-48 rounded-xl overflow-hidden border border-white/10 bg-[#101014]/95 backdrop-blur-lg shadow-xl animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="absolute right-0 top-full mt-2 w-48 rounded-xl overflow-hidden border border-white/10 bg-[#0b0b10] shadow-xl animate-in fade-in slide-in-from-top-2 duration-200">
                     <div className="p-1">
                       <Link
                         href="/admin"
@@ -201,7 +201,7 @@ export function Header() {
 
           {/* Mobile Menu */}
           {mobileMenuOpen && (
-            <div className="md:hidden py-4 border-t border-white/10">
+            <div className="md:hidden py-4 border-t border-white/10 bg-[#0b0b10]">
               <nav className="flex flex-col gap-4">
                 {navItems.map((item) => (
                   <Link

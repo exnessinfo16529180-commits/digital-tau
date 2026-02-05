@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useEffect, useMemo, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { ChevronLeft, ChevronRight, ExternalLink } from "lucide-react"
+import { ChevronLeft, ChevronRight, ExternalLink, X } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 import { getProject, type BackendProject } from "@/lib/api"
@@ -57,6 +57,7 @@ export default function ProjectDetailPage() {
   const [project, setProject] = useState<BackendProject | null>(null)
   const [index, setIndex] = useState(0)
   const [brokenImages, setBrokenImages] = useState<string[]>([])
+  const [viewerOpen, setViewerOpen] = useState(false)
 
   useEffect(() => {
     let alive = true
@@ -134,6 +135,25 @@ export default function ProjectDetailPage() {
     setIndex((i) => (i + 1) % images.length)
   }
 
+  useEffect(() => {
+    if (!viewerOpen) return
+
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = "hidden"
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setViewerOpen(false)
+      if (e.key === "ArrowLeft") prev()
+      if (e.key === "ArrowRight") next()
+    }
+
+    window.addEventListener("keydown", onKeyDown)
+    return () => {
+      window.removeEventListener("keydown", onKeyDown)
+      document.body.style.overflow = prevOverflow
+    }
+  }, [viewerOpen, images.length])
+
   const current = images[index] || ""
   const projectUrl = project ? safeProjectUrl(project) : ""
 
@@ -164,6 +184,62 @@ export default function ProjectDetailPage() {
 
   return (
     <div className="min-h-screen py-12">
+      {viewerOpen && current && (
+        <div
+          className="fixed inset-0 z-[200] bg-black/90"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setViewerOpen(false)}
+        >
+          <div className="absolute inset-0 flex items-center justify-center p-4">
+            <div
+              className="relative w-full max-w-6xl h-[85vh] rounded-2xl overflow-hidden bg-black border border-white/10"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={current}
+                alt={title}
+                className="absolute inset-0 w-full h-full object-contain"
+                onError={() => markBroken(current)}
+              />
+
+              <button
+                type="button"
+                onClick={() => setViewerOpen(false)}
+                className="absolute top-3 right-3 h-10 w-10 rounded-full bg-black border border-white/10 text-white hover:border-white/20 transition-colors"
+                aria-label="Close"
+              >
+                <X className="mx-auto" size={18} />
+              </button>
+
+              {images.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={prev}
+                    disabled={!canPrev}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 h-11 w-11 rounded-full bg-black border border-white/10 text-white hover:border-white/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    aria-label="Previous"
+                  >
+                    <ChevronLeft className="mx-auto" size={22} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={next}
+                    disabled={!canNext}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 h-11 w-11 rounded-full bg-black border border-white/10 text-white hover:border-white/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    aria-label="Next"
+                  >
+                    <ChevronRight className="mx-auto" size={22} />
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between gap-4 mb-8">
           <Link
@@ -196,8 +272,9 @@ export default function ProjectDetailPage() {
                 <img
                   src={current}
                   alt={title}
-                  className="absolute inset-0 w-full h-full object-cover"
+                  className="absolute inset-0 w-full h-full object-cover cursor-zoom-in"
                   onError={() => markBroken(current)}
+                  onClick={() => setViewerOpen(true)}
                 />
               ) : (
                 <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
