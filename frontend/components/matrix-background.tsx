@@ -113,12 +113,13 @@ export function MatrixBackground() {
 
           if (y > 0 && y < canvas.height) {
             const gradient = ctx.createLinearGradient(0, y - 10, 0, y + 10)
-            gradient.addColorStop(0, `rgba(179, 74, 108, ${column.opacity})`)
-            gradient.addColorStop(0.55, `rgba(245, 166, 35, ${column.opacity * 0.95})`)
-            gradient.addColorStop(1, `rgba(255, 255, 255, ${column.opacity * 0.55})`)
+            // Keep the "matrix" in burgundy tones, but brighter for readability.
+            gradient.addColorStop(0, `rgba(122, 31, 61, ${column.opacity * 0.9})`)
+            gradient.addColorStop(0.55, `rgba(179, 74, 108, ${column.opacity})`)
+            gradient.addColorStop(1, `rgba(255, 210, 226, ${column.opacity * 0.55})`)
 
             ctx.fillStyle = gradient
-            ctx.shadowColor = `rgba(245, 166, 35, ${Math.min(0.35, column.opacity)})`
+            ctx.shadowColor = `rgba(179, 74, 108, ${Math.min(0.38, column.opacity)})`
             ctx.shadowBlur = MATRIX.shadowBlur
             ctx.fillText(char, column.x, y)
           }
