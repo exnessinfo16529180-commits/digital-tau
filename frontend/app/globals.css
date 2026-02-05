@@ -4,17 +4,17 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: #000000;
+  --background: #07070a;
   --foreground: #ffffff;
-  --card: rgba(41, 12, 24, 0.45);
+  --card: rgba(41, 12, 24, 0.55);
   --card-foreground: #ffffff;
-  --popover: #1f0b14;
+  --popover: #241019;
   --popover-foreground: #ffffff;
   --primary: #7a1f3d;
   --primary-foreground: #ffffff;
-  --secondary: #220d15;
+  --secondary: #2a121c;
   --secondary-foreground: #ffffff;
-  --muted: #1f0b14;
+  --muted: #241019;
   --muted-foreground: #bda7af;
   --accent: #5a142d;
   --accent-foreground: #ffffff;
@@ -31,11 +31,11 @@
   --gradient-yellow: #b34a6c;
   
   /* Sidebar */
-  --sidebar: #0a0a0a;
+  --sidebar: #101014;
   --sidebar-foreground: #ffffff;
   --sidebar-primary: #7a1f3d;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1f0b14;
+  --sidebar-accent: #241019;
   --sidebar-accent-foreground: #ffffff;
   --sidebar-border: rgba(255, 255, 255, 0.1);
   --sidebar-ring: #9f2f55;
@@ -118,7 +118,7 @@
 
 /* Glass effect */
 .glass {
-  background: rgba(31, 11, 20, 0.55);
+  background: rgba(31, 11, 20, 0.6);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
@@ -180,7 +180,7 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #0a0a0a;
+  background: #101014;
 }
 
 ::-webkit-scrollbar-thumb {

@@ -55,7 +55,7 @@ function AdminSidebar() {
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed top-0 left-0 h-full w-64 bg-[#0a0a0a] border-r border-white/10 z-40",
+          "fixed top-0 left-0 h-full w-64 bg-sidebar border-r border-white/10 z-40",
           "flex flex-col transition-transform duration-300",
           mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
@@ -144,7 +144,7 @@ function AdminProtectedContent({ children }: { children: React.ReactNode }) {
   // Show loading while checking auth
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <Loader2 size={40} className="animate-spin text-[#7A1F3D]" />
           <p className="text-muted-foreground">{t("loading")}</p>
@@ -156,7 +156,7 @@ function AdminProtectedContent({ children }: { children: React.ReactNode }) {
   // Show login modal if not authenticated
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <LoginModal
           isOpen={showLoginModal}
           onClose={handleLoginClose}
@@ -168,7 +168,7 @@ function AdminProtectedContent({ children }: { children: React.ReactNode }) {
 
   // Show admin content if authenticated
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-background text-foreground">
       <AdminSidebar />
       <main className="lg:ml-64 min-h-screen">{children}</main>
     </div>

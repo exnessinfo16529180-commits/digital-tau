@@ -82,7 +82,7 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
       >
         {/* Gradient border wrapper */}
         <div className="absolute inset-0 rounded-2xl gradient-bg opacity-50 blur-sm" />
-        <div className="absolute inset-[1px] rounded-2xl bg-[#0a0a0a]" />
+        <div className="absolute inset-[1px] rounded-2xl bg-[#101014]" />
         
         {/* Content */}
         <div className="relative p-8">

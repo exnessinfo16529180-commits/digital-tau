@@ -16,7 +16,7 @@ export default function SiteLayout({
   return (
     <AuthProvider>
       <I18nProvider>
-        <div className="min-h-screen bg-black text-white relative">
+        <div className="min-h-screen bg-background text-foreground relative">
           <MatrixBackground />
           <Header />
           <main className="relative z-10 pt-16">{children}</main>

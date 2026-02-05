@@ -144,13 +144,13 @@ export function Header() {
                   <ShieldCheck size={18} className="text-white/70" />
                   {/* Dot indicator when logged in */}
                   {isAuthenticated && (
-                    <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-[#B34A6C] rounded-full border-2 border-[#0a0a0a]" />
+                    <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-[#B34A6C] rounded-full border-2 border-[#101014]" />
                   )}
                 </button>
 
                 {/* Admin Dropdown */}
                 {adminDropdownOpen && isAuthenticated && (
-                  <div className="absolute right-0 top-full mt-2 w-48 rounded-xl overflow-hidden border border-white/10 bg-[#0a0a0a]/95 backdrop-blur-lg shadow-xl animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="absolute right-0 top-full mt-2 w-48 rounded-xl overflow-hidden border border-white/10 bg-[#101014]/95 backdrop-blur-lg shadow-xl animate-in fade-in slide-in-from-top-2 duration-200">
                     <div className="p-1">
                       <Link
                         href="/admin"
