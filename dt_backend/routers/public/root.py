@@ -28,6 +28,6 @@ def create_root_router(settings: Settings) -> APIRouter:
 
     @router.get("/about")
     def about():
-        return to_front("/about")
+        return to_front("/")
 
     return router

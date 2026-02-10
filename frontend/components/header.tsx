@@ -13,7 +13,6 @@ const navItems = [
   { href: "/", labelKey: "home" },
   { href: "/projects", labelKey: "projects" },
   { href: "/technologies", labelKey: "technologies" },
-  { href: "/about", labelKey: "about" },
 ]
 
 const languages = [
