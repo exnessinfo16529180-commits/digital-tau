@@ -69,7 +69,8 @@ export function clearToken() {
 async function apiGet<T>(path: string): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, { cache: "no-store" })
   if (!res.ok) {
-    const text = await res.text().catch(() => "")
+    let text = await res.text().catch(() => "")
+    if (text.length > 100) text = text.substring(0, 100) + "..."
     throw new Error(`API ${path} failed: ${res.status} ${text}`)
   }
   return res.json() as Promise<T>

@@ -1,0 +1,27 @@
+
+> my-v0-project@0.1.0 dev
+> next dev
+
+   ▲ Next.js 16.0.10 (Turbopack)
+   - Local:         http://localhost:3000
+   - Network:       http://192.168.0.2:3000
+
+ ✓ Starting...
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+ ✓ Ready in 2.3s
+ ○ Compiling / ...
+ GET / 200 in 10.7s (compile: 9.7s, render: 990ms)
+ GET /api/admin/me 404 in 666ms (compile: 568ms, render: 98ms)
+ GET /technologies 200 in 1051ms (compile: 915ms, render: 136ms)
+ GET /api/admin/me 404 in 115ms (compile: 8ms, render: 107ms)
+ GET /api/technologies 404 in 119ms (compile: 32ms, render: 87ms)
+ GET /projects 200 in 879ms (compile: 733ms, render: 146ms)
+ GET /api/projects 404 in 188ms (compile: 33ms, render: 155ms)
+ GET /api/categories 404 in 185ms (compile: 9ms, render: 176ms)
+ GET /api/admin/me 404 in 180ms (compile: 96ms, render: 84ms)
+ ✓ Compiled in 73ms

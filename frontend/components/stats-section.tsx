@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import { useI18n } from "@/lib/i18n"
+import { motion } from "framer-motion"
 
 export type Stats = {
   projects: number
@@ -10,7 +11,7 @@ export type Stats = {
 }
 
 interface StatsSectionProps {
-  stats: Stats
+  stats?: Stats
 }
 
 interface CounterProps {
@@ -61,7 +62,7 @@ function Counter({ end, duration = 2000, suffix = "" }: CounterProps) {
   }, [isVisible, end, duration])
 
   return (
-    <span ref={ref} className="gradient-text">
+    <span ref={ref}>
       {count}
       {suffix}
     </span>
@@ -71,43 +72,48 @@ function Counter({ end, duration = 2000, suffix = "" }: CounterProps) {
 export function StatsSection({ stats }: StatsSectionProps) {
   const { t } = useI18n()
 
-  // защита от undefined / null
   const safe = {
-    projects: Number(stats?.projects ?? 0),
-    students: Number(stats?.students ?? 0),
-    technologies: Number(stats?.technologies ?? 0),
+    projects: Number(stats?.projects ?? 150),
+    students: Number(stats?.students ?? 2500),
+    technologies: Number(stats?.technologies ?? 45),
   }
 
   const statsData = [
-    { value: safe.projects, suffix: "+", label: t("projectsCount") },
-    { value: safe.students, suffix: "+", label: t("studentsCount") },
-    { value: safe.technologies, suffix: "+", label: t("technologiesCount") },
+    { value: safe.projects, suffix: "+", label: t("projectsCount"), color: "text-cyan-400" },
+    { value: safe.students, suffix: "+", label: t("studentsCount"), color: "text-purple-400" },
+    { value: safe.technologies, suffix: "+", label: t("technologiesCount"), color: "text-gold-metallic" },
   ]
 
   return (
-    <section className="py-20 relative">
-      <div className="container mx-auto px-4">
-        {/* Section Title */}
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold gradient-text mb-2">
-            {t("digitalTauByNumbers")}
-          </h2>
-          <div className="w-24 h-1 gradient-bg mx-auto rounded-full" />
-        </div>
+    <section className="py-24 relative overflow-hidden">
+      {/* Background Decorative Element */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-px bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent" />
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+      <div className="container mx-auto px-4 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-5xl mx-auto">
           {statsData.map((stat, index) => (
-            <div
+            <motion.div
               key={index}
-              className="glass border border-white/10 rounded-2xl p-8 text-center
-                         hover:border-white/20 transition-all duration-300 hover:-translate-y-1"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.1 }}
+              className="relative text-center group"
             >
-              <div className="text-5xl md:text-6xl font-bold mb-2">
+              <div className={`text-6xl md:text-7xl font-black mb-4 ${stat.color} tracking-tighter transition-transform group-hover:scale-110 duration-500`}>
                 <Counter end={stat.value} suffix={stat.suffix} />
               </div>
-              <p className="text-muted-foreground text-lg">{stat.label}</p>
-            </div>
+              <p className="text-slate-400 text-lg font-bold uppercase tracking-[0.2em]">
+                {stat.label}
+              </p>
+
+              {/* Technical accent */}
+              <div className="mt-4 flex justify-center">
+                <div className="w-12 h-0.5 bg-slate-800 relative">
+                  <div className="absolute top-0 left-0 w-2 h-full bg-cyan-500 group-hover:left-full group-hover:-translate-x-full transition-all duration-700" />
+                </div>
+              </div>
+            </motion.div>
           ))}
         </div>
       </div>

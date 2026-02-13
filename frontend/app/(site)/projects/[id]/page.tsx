@@ -3,10 +3,11 @@
 import Link from "next/link"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { ChevronLeft, ChevronRight, ExternalLink, Maximize2, X } from "lucide-react"
+import { ChevronLeft, ChevronRight, ExternalLink, Maximize2, X, Sparkles, Cpu } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 import { getProject, type BackendProject } from "@/lib/api"
+import { motion, AnimatePresence } from "framer-motion"
 
 function normalizeToArray(input?: string[] | string) {
   if (!input) return []
@@ -14,40 +15,18 @@ function normalizeToArray(input?: string[] | string) {
   const raw = String(input).trim()
   if (!raw) return []
   const s = raw.startsWith("{") && raw.endsWith("}") ? raw.slice(1, -1) : raw
-  return s
-    .split(",")
-    .map((x) => x.trim())
-    .filter(Boolean)
+  return s.split(",").map((x) => x.trim()).filter(Boolean)
 }
 
 function pickLang(p: BackendProject, lang: "ru" | "kz" | "en") {
-  const title =
-    (lang === "ru" ? p.titleRu : lang === "kz" ? p.titleKz : p.titleEn) ||
-    p.titleEn ||
-    p.titleRu ||
-    p.titleKz ||
-    "Untitled project"
-
-  const descriptionHtml =
-    (lang === "ru" ? p.descriptionRu : lang === "kz" ? p.descriptionKz : p.descriptionEn) ||
-    p.descriptionEn ||
-    p.descriptionRu ||
-    p.descriptionKz ||
-    ""
-
+  const title = (lang === "ru" ? p.titleRu : lang === "kz" ? p.titleKz : p.titleEn) || p.titleEn || "Untitled"
+  const descriptionHtml = (lang === "ru" ? p.descriptionRu : lang === "kz" ? p.descriptionKz : p.descriptionEn) || p.descriptionEn || ""
   return { title, descriptionHtml }
-}
-
-function safeProjectUrl(p: BackendProject) {
-  const url = String(p.projectUrl ?? (p as any).project_url ?? "").trim()
-  if (!url) return ""
-  if (url.startsWith("http://") || url.startsWith("https://")) return url
-  return url
 }
 
 export default function ProjectDetailPage() {
   const { t, language } = useI18n()
-  const lang: "ru" | "kz" | "en" = (language as any) || "en"
+  const lang = (language as any) || "en"
   const router = useRouter()
   const params = useParams<{ id?: string | string[] }>()
   const routeId = Array.isArray(params?.id) ? params?.id?.[0] : params?.id
@@ -56,349 +35,148 @@ export default function ProjectDetailPage() {
   const [error, setError] = useState("")
   const [project, setProject] = useState<BackendProject | null>(null)
   const [index, setIndex] = useState(0)
-  const [brokenImages, setBrokenImages] = useState<string[]>([])
   const [viewerOpen, setViewerOpen] = useState(false)
-  const [slideDir, setSlideDir] = useState<"next" | "prev">("next")
 
   useEffect(() => {
-    let alive = true
-    ;(async () => {
-      setLoading(true)
-      setError("")
-      try {
-        const rawId = String(routeId ?? "").trim()
-        if (!rawId || rawId === "undefined" || rawId === "null" || !/^\d+$/.test(rawId)) {
-          router.replace("/projects")
-          return
-        }
-        const p = await getProject(rawId)
-        if (!alive) return
-        setProject(p)
-        setIndex(0)
-        setBrokenImages([])
-      } catch (e: any) {
-        if (!alive) return
-        setProject(null)
-        setError(e?.message || "Failed to load project")
-      } finally {
-        if (alive) setLoading(false)
-      }
-    })()
-
-    return () => {
-      alive = false
-    }
-  }, [routeId, router])
+    if (!routeId) return
+    getProject(routeId).then(p => {
+      setProject(p)
+      setLoading(false)
+    }).catch(e => {
+      setError(e.message)
+      setLoading(false)
+    })
+  }, [routeId])
 
   const { title, descriptionHtml } = useMemo(() => pickLang(project || ({} as any), lang), [project, lang])
-
-  const techs = useMemo(() => {
-    if (!project) return []
-    return normalizeToArray(project.technologies as any)
-  }, [project])
-
+  const techs = useMemo(() => project ? normalizeToArray(project.technologies as any) : [], [project])
   const images = useMemo(() => {
     if (!project) return []
-    const combined = [
-      String(project.image || "").trim(),
-      ...normalizeToArray((project as any).images),
-    ].filter(Boolean)
-    const unique = Array.from(new Set(combined))
-    if (!brokenImages.length) return unique
-    const broken = new Set(brokenImages)
-    return unique.filter((u) => !broken.has(u))
-  }, [project, brokenImages])
+    return Array.from(new Set([String(project.image || "").trim(), ...normalizeToArray((project as any).images)])).filter(Boolean)
+  }, [project])
 
-  function markBroken(url: string) {
-    const u = String(url || "").trim()
-    if (!u) return
-    setBrokenImages((prev) => (prev.includes(u) ? prev : [...prev, u]))
-  }
+  const next = () => setIndex(i => (i + 1) % images.length)
+  const prev = () => setIndex(i => (i - 1 + images.length) % images.length)
 
-  const canPrev = images.length > 1
-  const canNext = images.length > 1
+  if (loading) return <div className="min-h-screen flex items-center justify-center font-black text-cyan-500 uppercase tracking-widest animate-pulse">Initializing Data...</div>
 
-  useEffect(() => {
-    if (!images.length) {
-      if (index !== 0) setIndex(0)
-      return
-    }
-    if (index >= images.length) setIndex(0)
-  }, [images.length, index])
+  if (error || !project) return (
+    <div className="min-h-screen flex items-center justify-center p-4">
+       <div className="glass-cyan p-12 rounded-[2rem] text-center border border-red-500/30">
+          <p className="text-red-400 font-black mb-6 uppercase tracking-widest">System Error: Project Not Found</p>
+          <Link href="/projects" className="px-8 py-4 rounded-full bg-cyan-500 text-black font-black uppercase tracking-widest">Back to Hub</Link>
+       </div>
+    </div>
+  )
 
-  const prev = useCallback(() => {
-    if (images.length <= 1) return
-    setSlideDir("prev")
-    setIndex((i) => (i - 1 + images.length) % images.length)
-  }, [images.length])
-
-  const next = useCallback(() => {
-    if (images.length <= 1) return
-    setSlideDir("next")
-    setIndex((i) => (i + 1) % images.length)
-  }, [images.length])
-
-  useEffect(() => {
-    if (!viewerOpen) return
-
-    const prevOverflow = document.body.style.overflow
-    document.body.style.overflow = "hidden"
-
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setViewerOpen(false)
-      if (e.key === "ArrowLeft") prev()
-      if (e.key === "ArrowRight") next()
-    }
-
-    window.addEventListener("keydown", onKeyDown)
-    return () => {
-      window.removeEventListener("keydown", onKeyDown)
-      document.body.style.overflow = prevOverflow
-    }
-  }, [viewerOpen, next, prev])
-
-  const current = images[index] || ""
-  const projectUrl = project ? safeProjectUrl(project) : ""
-
-  if (loading) {
-    return (
-      <div className="min-h-screen py-12">
-        <div className="container mx-auto px-4 text-center text-muted-foreground">{t("loading")}</div>
-      </div>
-    )
-  }
-
-  if (error || !project) {
-    return (
-      <div className="min-h-screen py-12">
-        <div className="container mx-auto px-4">
-          <div className="glass border border-red-500/30 rounded-2xl p-6 text-red-300 text-center">
-            {error || "Project not found"}
-            <div className="mt-4">
-              <Link href="/projects" className="gradient-text underline">
-                {t("projects")}
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
+  const current = images[index]
 
   return (
-    <div className="min-h-screen py-12">
-      {viewerOpen && current && (
-        <div
-          className="fixed inset-0 z-[200] bg-black/90"
-          role="dialog"
-          aria-modal="true"
-          onClick={() => setViewerOpen(false)}
-        >
-          <div className="absolute inset-0 flex items-center justify-center p-4">
-            <div
-              className="relative w-full max-w-6xl h-[85vh] rounded-2xl overflow-hidden bg-black border border-white/10"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                key={current}
-                src={current}
-                alt={title}
-                className={cn(
-                  "absolute inset-0 w-full h-full object-contain",
-                  "animate-in fade-in duration-300",
-                  slideDir === "next" ? "slide-in-from-right-3" : "slide-in-from-left-3"
-                )}
-                onError={() => markBroken(current)}
-              />
-
-              <button
-                type="button"
-                onClick={() => setViewerOpen(false)}
-                className="absolute top-3 right-3 h-10 w-10 rounded-full bg-black border border-white/10 text-white hover:border-white/20 transition-colors"
-                aria-label="Close"
-              >
-                <X className="mx-auto" size={18} />
-              </button>
-
-              {images.length > 1 && (
-                <>
-                  <button
-                    type="button"
-                    onClick={prev}
-                    disabled={!canPrev}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 h-11 w-11 rounded-full bg-black border border-white/10 text-white hover:border-white/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    aria-label="Previous"
-                  >
-                    <ChevronLeft className="mx-auto" size={22} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={next}
-                    disabled={!canNext}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 h-11 w-11 rounded-full bg-black border border-white/10 text-white hover:border-white/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    aria-label="Next"
-                  >
-                    <ChevronRight className="mx-auto" size={22} />
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
+    <div className="min-h-screen py-24">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between gap-4 mb-8">
-          <Link
-            href="/projects"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl glass border border-white/10 text-white/80 hover:text-white hover:border-white/20 transition-colors"
-          >
-            <ChevronLeft size={18} />
-            {t("projects")}
-          </Link>
+        <Link href="/projects" className="inline-flex items-center gap-2 mb-12 text-cyan-500 font-black uppercase tracking-widest text-sm hover:text-white transition-colors">
+          <ChevronLeft size={20} />
+          {t("projects")}
+        </Link>
 
-          {projectUrl && (
-            <a
-              href={projectUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl gradient-bg text-white font-medium hover:opacity-90 transition-opacity"
-            >
-              <ExternalLink size={18} />
-              {t("viewProject")}
-            </a>
-          )}
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Slider */}
-          <div className="glass border border-white/10 rounded-2xl p-4">
-            <div className="relative rounded-2xl overflow-hidden bg-black/40 aspect-[16/10] border border-white/10">
-              {current ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+          {/* Visuals */}
+          <div className="space-y-6">
+            <div className="relative group rounded-[2rem] overflow-hidden glass-cyan border border-cyan-500/20 aspect-video">
+              <AnimatePresence mode="wait">
+                <motion.img
                   key={current}
                   src={current}
-                  alt={title}
-                  className={cn(
-                    "absolute inset-0 w-full h-full object-cover cursor-zoom-in",
-                    "animate-in fade-in duration-300",
-                    slideDir === "next" ? "slide-in-from-right-2" : "slide-in-from-left-2"
-                  )}
-                  onError={() => markBroken(current)}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 w-full h-full object-cover cursor-zoom-in"
                   onClick={() => setViewerOpen(true)}
                 />
-              ) : (
-                <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
-                  No images
-                </div>
-              )}
+              </AnimatePresence>
 
-              {current && (
-                <button
-                  type="button"
-                  onClick={() => setViewerOpen(true)}
-                  className="absolute bottom-3 right-3 h-10 w-10 rounded-full bg-black/70 border border-white/10 text-white hover:border-white/20 transition-colors"
-                  aria-label="Fullscreen"
-                  title="Fullscreen"
-                >
-                  <Maximize2 className="mx-auto" size={18} />
-                </button>
-              )}
+              <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-60" />
 
               {images.length > 1 && (
-                <>
-                  <button
-                    type="button"
-                    onClick={prev}
-                    disabled={!canPrev}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full glass border border-white/10 text-white hover:border-white/20 transition-colors"
-                    aria-label="Previous"
-                  >
-                    <ChevronLeft className="mx-auto" size={20} />
+                <div className="absolute bottom-6 right-6 flex gap-2">
+                  <button onClick={prev} className="p-3 rounded-full glass border border-white/10 text-white hover:bg-cyan-500 hover:text-black transition-all">
+                    <ChevronLeft size={20} />
                   </button>
-                  <button
-                    type="button"
-                    onClick={next}
-                    disabled={!canNext}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full glass border border-white/10 text-white hover:border-white/20 transition-colors"
-                    aria-label="Next"
-                  >
-                    <ChevronRight className="mx-auto" size={20} />
+                  <button onClick={next} className="p-3 rounded-full glass border border-white/10 text-white hover:bg-cyan-500 hover:text-black transition-all">
+                    <ChevronRight size={20} />
                   </button>
-                </>
+                </div>
               )}
             </div>
 
-            {images.length > 1 && (
-              <div className="mt-4 grid grid-cols-5 gap-2">
-                    {images.slice(0, 10).map((url, i) => (
-                  <button
-                    key={url}
-                    type="button"
-                    onClick={() => {
-                      setSlideDir(i > index ? "next" : "prev")
-                      setIndex(i)
-                    }}
-                    className={cn(
-                      "relative rounded-xl overflow-hidden aspect-[4/3] border bg-black/40",
-                      i === index ? "border-rose-700/70" : "border-white/10 hover:border-white/20"
-                    )}
-                    aria-label={`image ${i + 1}`}
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={url}
-                        alt=""
-                        className="absolute inset-0 w-full h-full object-cover"
-                        onError={() => markBroken(url)}
-                      />
-                    </button>
-                  ))}
-              </div>
-            )}
+            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+              {images.map((img, i) => (
+                <button
+                  key={i}
+                  onClick={() => setIndex(i)}
+                  className={cn(
+                    "w-24 h-24 rounded-2xl overflow-hidden border transition-all shrink-0",
+                    index === i ? "border-cyan-500 scale-105" : "border-white/10 opacity-50 hover:opacity-100"
+                  )}
+                >
+                  <img src={img} className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
           </div>
 
-          {/* Details */}
-          <div className="glass border border-white/10 rounded-2xl p-6">
-            <h1 className="text-3xl md:text-4xl font-bold mb-3">
-              <span className="inline-block gradient-text drop-shadow-[0_2px_14px_rgba(0,0,0,0.75)] bg-black/35 border border-white/10 px-3 py-2 rounded-2xl">
+          {/* Intel */}
+          <div className="space-y-8">
+            <div>
+              <div className="flex items-center gap-2 text-cyan-500 font-black uppercase tracking-[0.3em] text-[10px] mb-4">
+                <Sparkles size={12} />
+                Project Intel
+              </div>
+              <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter mb-4 uppercase">
                 {title}
-              </span>
-            </h1>
-
-            <div className="flex flex-wrap items-center gap-2 mb-5">
-              {project.category && (
-                <span className="px-3 py-1 rounded-full text-xs font-medium gradient-bg text-white">
-                  {String(project.category).toUpperCase()}
+              </h1>
+              <div className="flex flex-wrap gap-3">
+                <span className="px-4 py-1 rounded-full bg-cyan-500 text-black font-black text-[10px] uppercase tracking-widest">
+                  {project.category || "General"}
                 </span>
-              )}
-              {Boolean(project.featured) && (
-                <span className="px-3 py-1 rounded-full text-xs font-medium border border-rose-700/40 bg-rose-900/20 text-rose-200">
-                  Featured
-                </span>
-              )}
+                {project.featured && (
+                  <span className="px-4 py-1 rounded-full border border-purple-500 text-purple-400 font-black text-[10px] uppercase tracking-widest">
+                    Featured
+                  </span>
+                )}
+              </div>
             </div>
 
-            {techs.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-6">
-                {techs.map((tech) => (
-                  <span
-                    key={tech}
-                    className="px-3 py-1 rounded-full text-xs border border-white/10 bg-white/5 text-white/80"
-                  >
-                    {tech}
-                  </span>
-                ))}
-              </div>
-            )}
+            <div className="space-y-4">
+               <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                 <Cpu size={14} /> Technology Stack
+               </h3>
+               <div className="flex flex-wrap gap-2">
+                 {techs.map(t => (
+                   <span key={t} className="px-3 py-1 rounded-lg glass-cyan border border-cyan-500/20 text-cyan-400 text-xs font-bold">
+                     {t}
+                   </span>
+                 ))}
+               </div>
+            </div>
 
-            <div
-              className="prose prose-invert max-w-none text-white/80"
-              // backend sanitizes this field
-              dangerouslySetInnerHTML={{ __html: descriptionHtml || "" }}
-            />
+            <div className="prose prose-invert max-w-none">
+              <div
+                className="text-slate-400 text-lg leading-relaxed space-y-4"
+                dangerouslySetInnerHTML={{ __html: descriptionHtml }}
+              />
+            </div>
+
+            {project.projectUrl && (
+              <a
+                href={project.projectUrl}
+                target="_blank"
+                className="inline-flex items-center gap-3 px-10 py-5 rounded-full bg-white text-black font-black text-lg hover:bg-cyan-500 transition-all uppercase tracking-widest group"
+              >
+                Launch Project
+                <ExternalLink size={20} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+              </a>
+            )}
           </div>
         </div>
       </div>

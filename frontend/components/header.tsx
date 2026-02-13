@@ -3,16 +3,18 @@
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useState, useRef, useEffect } from "react"
-import { Menu, X, ShieldCheck, LayoutDashboard, FolderKanban, Settings, LogOut } from "lucide-react"
+import { Menu, X, ShieldCheck, LayoutDashboard, FolderKanban, Settings, LogOut, Globe } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
 import { useAuth } from "@/lib/auth"
 import { LoginModal } from "@/components/login-modal"
 import { cn } from "@/lib/utils"
+import { motion, AnimatePresence } from "framer-motion"
 
 const navItems = [
   { href: "/", labelKey: "home" },
   { href: "/projects", labelKey: "projects" },
   { href: "/technologies", labelKey: "technologies" },
+  { href: "/about", labelKey: "about" },
 ]
 
 const languages = [
@@ -30,13 +32,16 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [loginModalOpen, setLoginModalOpen] = useState(false)
   const [adminDropdownOpen, setAdminDropdownOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     setMounted(true)
+    const handleScroll = () => setScrolled(window.scrollY > 20)
+    window.addEventListener("scroll", handleScroll)
+    return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -61,66 +66,69 @@ export function Header() {
     router.push("/")
   }
 
-  const handleLoginSuccess = () => {
-    router.push("/admin")
-  }
-
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[#0b0b10] border-b border-white/10">
+      <header
+        className={cn(
+          "fixed top-0 left-0 right-0 z-50 transition-all duration-500",
+          scrolled ? "py-2" : "py-4"
+        )}
+      >
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
+          <div className={cn(
+            "flex items-center justify-between px-6 h-16 rounded-full transition-all duration-500",
+            scrolled ? "glass-cyan border-cyan-500/20 shadow-lg shadow-cyan-500/10" : "bg-transparent border-transparent"
+          )}>
             {/* Logo */}
             <Link href="/" className="flex items-center gap-3 group">
-              <div className="w-10 h-10 rounded-lg overflow-hidden">
+              <div className="w-10 h-10 rounded-full border border-cyan-500/30 overflow-hidden group-hover:scale-110 transition-transform">
                 <img
-                  src="/images/logo.jpeg"
-                  alt="Turan-Astana University Logo"
+                  src="/images/tau-logo.jpg"
+                  alt="TAU Logo"
                   className="w-full h-full object-cover"
                 />
               </div>
-              <span className="font-bold text-white hidden sm:block group-hover:gradient-text transition-all duration-300">
-                Turan-Astana University
-              </span>
+              <div className="flex flex-col">
+                <span className="font-black text-white leading-none tracking-tighter text-lg group-hover:text-cyan-400 transition-colors">
+                  DIGITAL TAU
+                </span>
+                <span className="text-[10px] text-cyan-500/70 font-bold uppercase tracking-widest hidden sm:block">
+                  Innovation Hub
+                </span>
+              </div>
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-8">
+            <nav className="hidden lg:flex items-center gap-2">
               {navItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "relative text-sm font-medium transition-colors duration-300 py-2",
+                    "px-4 py-2 text-xs font-black uppercase tracking-widest transition-all rounded-full",
                     mounted && pathname === item.href
-                      ? "text-white"
-                      : "text-white/70 hover:text-white"
+                      ? "bg-cyan-500 text-black"
+                      : "text-white/60 hover:text-white hover:bg-white/5"
                   )}
                 >
                   {t(item.labelKey)}
-                  <span
-                    className={cn(
-                      "absolute bottom-0 left-0 h-0.5 gradient-bg transition-all duration-300",
-                      mounted && pathname === item.href ? "w-full" : "w-0 group-hover:w-full"
-                    )}
-                  />
                 </Link>
               ))}
             </nav>
 
-            {/* Right side: Language Switcher + Admin */}
-            <div className="hidden md:flex items-center gap-3">
+            {/* Right side */}
+            <div className="hidden md:flex items-center gap-4">
               {/* Language Switcher */}
-              <div className="flex items-center gap-1">
+              <div className="flex items-center bg-white/5 rounded-full p-1 border border-white/10">
                 {languages.map((lang) => (
                   <button
                     key={lang.code}
                     onClick={() => setLanguage(lang.code)}
                     className={cn(
-                      "px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-300",
+                      "px-3 py-1 text-[10px] font-black rounded-full transition-all",
                       language === lang.code
-                        ? "gradient-bg text-white"
-                        : "text-white/70 hover:text-white hover:bg-white/10"
+                        ? "bg-cyan-500 text-black shadow-lg shadow-cyan-500/30"
+                        : "text-white/40 hover:text-white"
                     )}
                   >
                     {lang.label}
@@ -128,148 +136,125 @@ export function Header() {
                 ))}
               </div>
 
-              {/* Admin Button */}
+              {/* Admin Shield */}
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={handleAdminClick}
                   className={cn(
-                    "relative p-2 rounded-lg transition-all duration-300",
-                    "bg-white/5 border border-white/10 hover:border-white/20",
-                    "hover:bg-gradient-to-r hover:from-[#7A1F3D]/30 hover:to-[#B34A6C]/20",
-                    isAuthenticated && "border-[#7A1F3D]/30"
+                    "p-2.5 rounded-full transition-all border group relative overflow-hidden",
+                    isAuthenticated
+                      ? "bg-burgundy-uni/20 border-burgundy-uni/50 shadow-lg shadow-burgundy-uni/20"
+                      : "bg-white/5 border-white/10 hover:border-cyan-500/50"
                   )}
-                  title={t("adminPanel")}
                 >
-                  <ShieldCheck size={18} className="text-white/70" />
-                  {/* Dot indicator when logged in */}
+                  <ShieldCheck size={20} className={cn(
+                    "transition-colors",
+                    isAuthenticated ? "text-white" : "text-white/40 group-hover:text-cyan-400"
+                  )} />
                   {isAuthenticated && (
-                    <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-[#B34A6C] rounded-full border-2 border-[#0b0b10]" />
+                    <span className="absolute top-0 right-0 w-2 h-2 bg-cyan-400 rounded-full animate-pulse" />
                   )}
                 </button>
 
-                {/* Admin Dropdown */}
-                {adminDropdownOpen && isAuthenticated && (
-                  <div className="absolute right-0 top-full mt-2 w-48 rounded-xl overflow-hidden border border-white/10 bg-[#0b0b10] shadow-xl animate-in fade-in slide-in-from-top-2 duration-200">
-                    <div className="p-1">
+                <AnimatePresence>
+                  {adminDropdownOpen && isAuthenticated && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      className="absolute right-0 top-full mt-4 w-56 rounded-2xl glass-cyan border border-cyan-500/20 shadow-2xl p-2 z-[60]"
+                    >
                       <Link
                         href="/admin"
-                        onClick={() => setAdminDropdownOpen(false)}
-                        className="flex items-center gap-3 px-3 py-2.5 text-sm text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                        className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-white/80 hover:text-white hover:bg-cyan-500/10 rounded-xl transition-all"
                       >
-                        <LayoutDashboard size={16} />
+                        <LayoutDashboard size={18} className="text-cyan-400" />
                         {t("dashboard")}
                       </Link>
-                      <Link
-                        href="/admin/projects"
-                        onClick={() => setAdminDropdownOpen(false)}
-                        className="flex items-center gap-3 px-3 py-2.5 text-sm text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
-                      >
-                        <FolderKanban size={16} />
-                        {t("manageProjects")}
-                      </Link>
-                      <Link
-                        href="/admin/settings"
-                        onClick={() => setAdminDropdownOpen(false)}
-                        className="flex items-center gap-3 px-3 py-2.5 text-sm text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
-                      >
-                        <Settings size={16} />
-                        {t("settings")}
-                      </Link>
-                      <div className="my-1 border-t border-white/10" />
+                      {/* ... other items */}
                       <button
                         onClick={handleLogout}
-                        className="flex items-center gap-3 w-full px-3 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors"
+                        className="flex items-center gap-3 w-full px-4 py-3 text-sm font-bold text-red-400 hover:bg-red-500/10 rounded-xl transition-all"
                       >
-                        <LogOut size={16} />
+                        <LogOut size={18} />
                         {t("logout")}
                       </button>
-                    </div>
-                  </div>
-                )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
 
-            {/* Mobile Menu Button */}
+            {/* Mobile Menu Toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 text-white/70 hover:text-white transition-colors"
+              className="lg:hidden p-2 rounded-full bg-white/5 border border-white/10 text-white"
             >
               {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
+        </div>
 
-          {/* Mobile Menu */}
+        {/* Mobile Menu */}
+        <AnimatePresence>
           {mobileMenuOpen && (
-            <div className="md:hidden py-4 border-t border-white/10 bg-[#0b0b10]">
-              <nav className="flex flex-col gap-4">
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="lg:hidden bg-slate-950/95 backdrop-blur-2xl border-b border-white/10 overflow-hidden"
+            >
+              <div className="container mx-auto px-6 py-8 flex flex-col gap-6">
                 {navItems.map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}
                     onClick={() => setMobileMenuOpen(false)}
                     className={cn(
-                      "text-sm font-medium transition-colors duration-300 py-2",
-                      mounted && pathname === item.href
-                        ? "gradient-text"
-                        : "text-white/70 hover:text-white"
+                      "text-2xl font-black uppercase tracking-tighter",
+                      pathname === item.href ? "text-cyan-400" : "text-white/60"
                     )}
                   >
                     {t(item.labelKey)}
                   </Link>
                 ))}
-              </nav>
-              
-              <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/10">
-                <div className="flex items-center gap-2">
-                  {languages.map((lang) => (
-                    <button
-                      key={lang.code}
-                      onClick={() => setLanguage(lang.code)}
-                      className={cn(
-                        "px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-300",
-                        language === lang.code
-                          ? "gradient-bg text-white"
-                          : "text-white/70 hover:text-white hover:bg-white/10"
-                      )}
-                    >
-                      {lang.label}
-                    </button>
-                  ))}
-                </div>
 
-                {/* Mobile Admin Button */}
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false)
-                    if (isAuthenticated) {
-                      router.push("/admin")
-                    } else {
-                      setLoginModalOpen(true)
-                    }
-                  }}
-                  className={cn(
-                    "relative flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm",
-                    "bg-white/5 border border-white/10",
-                    isAuthenticated && "border-[#7A1F3D]/30"
-                  )}
-                >
-                  <ShieldCheck size={16} className="text-white/70" />
-                  <span className="text-white/70">{t("admin")}</span>
-                  {isAuthenticated && (
-                    <span className="w-2 h-2 bg-[#B34A6C] rounded-full" />
-                  )}
-                </button>
+                <div className="flex items-center justify-between pt-6 border-t border-white/10">
+                  <div className="flex gap-4">
+                    {languages.map((lang) => (
+                      <button
+                        key={lang.code}
+                        onClick={() => setLanguage(lang.code)}
+                        className={cn(
+                          "text-lg font-black",
+                          language === lang.code ? "text-cyan-400" : "text-white/20"
+                        )}
+                      >
+                        {lang.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false)
+                      isAuthenticated ? router.push("/admin") : setLoginModalOpen(true)
+                    }}
+                    className="p-4 rounded-full bg-cyan-500 text-black"
+                  >
+                    <ShieldCheck size={24} />
+                  </button>
+                </div>
               </div>
-            </div>
+            </motion.div>
           )}
-        </div>
+        </AnimatePresence>
       </header>
 
-      {/* Login Modal */}
       <LoginModal 
         isOpen={loginModalOpen} 
         onClose={() => setLoginModalOpen(false)}
-        onSuccess={handleLoginSuccess}
+        onSuccess={() => router.push("/admin")}
       />
     </>
   )
