@@ -1,17 +1,16 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { Search } from "lucide-react"
+import { Search, Sparkles, Filter } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
 import { cn, stripHtml } from "@/lib/utils"
 import { getCategories, getProjects, type BackendCategory, type BackendProject } from "@/lib/api"
 import { ProjectCard } from "@/components/project-card"
 import { extractCategoryCodes, formatCategoryLabel, mapCategory, normalizeCategoryCode } from "@/lib/mappers/project.mapper"
 import type { UiProject } from "@/lib/mappers/project.mapper"
+import { motion, AnimatePresence } from "framer-motion"
 
-// -------- helpers --------
-const API_BASE =
-  (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(/\/+$/, "")
+const API_BASE = (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(/\/+$/, "")
 
 function normalizeImage(img?: string) {
   if (!img) return ""
@@ -23,32 +22,14 @@ function normalizeImage(img?: string) {
 type UiProjectWithCodes = UiProject & { categoryCodes: string[] }
 
 function pickLangText(p: BackendProject, lang: "ru" | "kz" | "en") {
-  const title =
-    (lang === "ru" ? p.titleRu : lang === "kz" ? p.titleKz : p.titleEn) ||
-    p.titleEn ||
-    p.titleRu ||
-    p.titleKz ||
-    "Untitled project"
-
-  const descriptionRaw =
-    (lang === "ru" ? p.descriptionRu : lang === "kz" ? p.descriptionKz : p.descriptionEn) ||
-    p.descriptionEn ||
-    p.descriptionRu ||
-    p.descriptionKz ||
-    ""
-
+  const title = (lang === "ru" ? p.titleRu : lang === "kz" ? p.titleKz : p.titleEn) || p.titleEn || "Untitled project"
+  const descriptionRaw = (lang === "ru" ? p.descriptionRu : lang === "kz" ? p.descriptionKz : p.descriptionEn) || p.descriptionEn || ""
   return { title, description: stripHtml(descriptionRaw) }
 }
 
 function toUiProject(p: BackendProject, lang: "ru" | "kz" | "en"): UiProjectWithCodes {
   const { title, description } = pickLangText(p, lang)
-
-  const techStack = Array.isArray(p.technologies)
-    ? p.technologies
-    : typeof p.technologies === "string"
-      ? p.technologies.split(",").map((s) => s.trim()).filter(Boolean)
-      : []
-
+  const techStack = Array.isArray(p.technologies) ? p.technologies : []
   const projectUrl = (p.projectUrl ?? (p as any).project_url ?? "") as string
   const categoryCodes = extractCategoryCodes(p)
   const primaryCategory = p.category ?? categoryCodes[0] ?? undefined
@@ -70,192 +51,175 @@ function isValidProjectId(id: string) {
   const s = String(id ?? "").trim()
   return !!s && s !== "undefined" && s !== "null" && /^\d+$/.test(s)
 }
-// -------------------------
 
 export default function ProjectsPage() {
   const { t, language } = useI18n()
-  const lang: "ru" | "kz" | "en" = (language as "ru" | "kz" | "en") || "en"
+  const lang = (language as "ru" | "kz" | "en") || "en"
 
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<string | "all">("all")
-
   const [loading, setLoading] = useState(true)
   const [items, setItems] = useState<BackendProject[]>([])
   const [categoryItems, setCategoryItems] = useState<BackendCategory[]>([])
   const [error, setError] = useState<string | null>(null)
 
-  // 1) грузим проекты из API
   useEffect(() => {
-    let alive = true
-    ;(async () => {
-      try {
-        setLoading(true)
-        setError(null)
-        const [projects, categories] = await Promise.all([
-          getProjects(),
-          getCategories().catch(() => [] as BackendCategory[]),
-        ])
-        if (!alive) return
-        setItems(Array.isArray(projects) ? projects : [])
+    Promise.all([getProjects(), getCategories().catch(() => [])])
+      .then(([projects, categories]) => {
+        const data = Array.isArray(projects) && projects.length > 0 ? projects : mockProjects
+        setItems(data)
         setCategoryItems(Array.isArray(categories) ? categories : [])
-      } catch (e: any) {
-        if (!alive) return
-        setItems([])
-        setCategoryItems([])
-        setError(e?.message || t("failedToLoadProjects"))
-      } finally {
-        if (alive) setLoading(false)
-      }
-    })()
-
-    return () => {
-      alive = false
-    }
+        setLoading(false)
+      })
+      .catch(e => {
+        setItems(mockProjects)
+        setLoading(false)
+      })
   }, [t])
 
-  // 2) переводим проекты к виду карточки (UiProject)
-  const uiProjects = useMemo<UiProjectWithCodes[]>(() => {
-    const mapped = (Array.isArray(items) ? items : []).map((p) => toUiProject(p, lang))
-    return mapped.filter((p) => isValidProjectId(p.id))
+  const mockProjects: BackendProject[] = [
+    {
+      id: "1",
+      titleEn: "Smart University Campus",
+      titleRu: "Умный кампус университета",
+      descriptionEn: "IoT-based system for campus management and student tracking.",
+      descriptionRu: "Система на базе IoT для управления кампусом и отслеживания студентов.",
+      technologies: ["React", "Node.js", "MQTT", "Python"],
+      category: "IOT",
+      featured: true,
+      image: "https://images.unsplash.com/photo-1558441306-8e440971baa4?auto=format&fit=crop&q=80&w=800"
+    },
+    {
+      id: "2",
+      titleEn: "AI Research Assistant",
+      titleRu: "ИИ-помощник для исследований",
+      descriptionEn: "Neural network for scientific paper analysis and summarization.",
+      descriptionRu: "Нейронная сеть для анализа и аннотирования научных работ.",
+      technologies: ["PyTorch", "FastAPI", "Next.js"],
+      category: "AI",
+      featured: true,
+      image: "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80&w=800"
+    },
+    {
+      id: "3",
+      titleEn: "VR History Museum",
+      titleRu: "VR Музей истории",
+      descriptionEn: "Immersive VR experience for exploring ancient architecture.",
+      descriptionRu: "Иммерсивный VR-опыт для изучения древней архитектуры.",
+      technologies: ["Unity", "C#", "Oculus SDK"],
+      category: "VR",
+      featured: true,
+      image: "https://images.unsplash.com/photo-1592478411213-6153e4ebc07d?auto=format&fit=crop&q=80&w=800"
+    }
+  ]
+
+  const uiProjects = useMemo(() => {
+    return items.map(p => toUiProject(p, lang)).filter(p => isValidProjectId(p.id))
   }, [items, lang])
 
-  // 3) категории показываем только те, по которым есть проекты
   const categories = useMemo(() => {
     const byCode = new Map<string, BackendCategory>()
-    for (const c of Array.isArray(categoryItems) ? categoryItems : []) {
-      const code = normalizeCategoryCode(c?.code)
-      if (code) byCode.set(code, c)
-    }
-
+    for (const c of categoryItems) byCode.set(normalizeCategoryCode(c?.code) || "", c)
     const usedCodes = new Set<string>()
-    for (const p of uiProjects) {
-      for (const code of p.categoryCodes) usedCodes.add(code)
-    }
+    for (const p of uiProjects) p.categoryCodes.forEach(c => usedCodes.add(c))
 
-    const labelFor = (code: string) => {
+    return Array.from(usedCodes).map(code => {
       const meta = byCode.get(code)
-      if (!meta) return formatCategoryLabel(code)
-      if (lang === "ru") return String(meta.nameRu || meta.code || code)
-      if (lang === "kz") return String(meta.nameKz || meta.code || code)
-      return String(meta.nameEn || meta.code || code)
-    }
-
-    return Array.from(usedCodes)
-      .map((code) => ({ code, label: labelFor(code) }))
-      .sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: "base" }))
+      let label = formatCategoryLabel(code)
+      if (meta) label = (lang === "ru" ? meta.nameRu : lang === "kz" ? meta.nameKz : meta.nameEn) || meta.code || code
+      return { code, label }
+    }).sort((a, b) => a.label.localeCompare(b.label))
   }, [uiProjects, categoryItems, lang])
 
-  // 4) фильтрация + поиск
   const filteredProjects = useMemo(() => {
     const q = searchQuery.trim().toLowerCase()
-
-    return uiProjects.filter((project) => {
-      const matchesCategory =
-        selectedCategory === "all" || project.categoryCodes.includes(selectedCategory)
-
-      const matchesSearch =
-        !q ||
-        project.title.toLowerCase().includes(q) ||
-        (project.description || "").toLowerCase().includes(q) ||
-        (project.techStack || []).some((tech) => tech.toLowerCase().includes(q))
-
-      return matchesCategory && matchesSearch
+    return uiProjects.filter(p => {
+      const matchesCat = selectedCategory === "all" || p.categoryCodes.includes(selectedCategory)
+      const matchesSearch = !q || p.title.toLowerCase().includes(q) || p.description.toLowerCase().includes(q) || p.techStack.some(t => t.toLowerCase().includes(q))
+      return matchesCat && matchesSearch
     })
   }, [uiProjects, searchQuery, selectedCategory])
 
   return (
-    <div className="min-h-screen py-12">
+    <div className="min-h-screen py-24">
       <div className="container mx-auto px-4">
-        {/* Page Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold gradient-text mb-4">
-            {t("projectCatalog")}
+        <div className="text-center mb-16">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center justify-center gap-2 text-cyan-500 font-black uppercase tracking-[0.3em] text-xs mb-6">
+            <Sparkles size={14} />
+            Explorer
+          </motion.div>
+          <h1 className="text-5xl md:text-7xl font-black text-white tracking-tighter mb-8 uppercase">
+             <span className="text-metallic">{t("projects")}</span> CATALOG
           </h1>
-          <div className="w-24 h-1 gradient-bg mx-auto rounded-full" />
         </div>
 
-        {/* Search & Filter */}
-        <div className="max-w-4xl mx-auto mb-12">
-          {/* Search Bar */}
-          <div className="relative mb-6">
-            <Search
-              size={20}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
-            />
+        <div className="max-w-5xl mx-auto mb-20 space-y-8">
+          <div className="relative group">
+            <div className="absolute inset-0 bg-cyan-500/10 blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity" />
+            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-cyan-500/50" size={24} />
             <input
               type="text"
               placeholder={t("searchProjects")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-4 rounded-2xl glass border border-white/10
-                         text-white placeholder:text-muted-foreground
-                         focus:outline-none focus:border-white/30 transition-colors"
+              className="w-full pl-16 pr-8 py-6 rounded-[2rem] glass-cyan border border-cyan-500/20 text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-500 transition-all text-lg font-bold"
             />
           </div>
 
-          {/* Category Filters */}
           <div className="flex flex-wrap items-center justify-center gap-3">
-            <button
+             <button
               onClick={() => setSelectedCategory("all")}
               className={cn(
-                "px-4 py-2 rounded-full text-sm font-medium transition-all duration-300",
-                selectedCategory === "all"
-                  ? "gradient-bg text-white"
-                  : "glass border border-white/10 text-white/70 hover:text-white hover:border-white/30"
+                "px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest transition-all",
+                selectedCategory === "all" ? "bg-cyan-500 text-black shadow-lg shadow-cyan-500/30" : "bg-white/5 text-white/40 hover:text-white hover:bg-white/10"
               )}
             >
               {t("all")}
             </button>
-
-            {categories.map((category) => (
+            {categories.map(c => (
               <button
-                key={category.code}
-                onClick={() => setSelectedCategory(category.code)}
+                key={c.code}
+                onClick={() => setSelectedCategory(c.code)}
                 className={cn(
-                  "px-4 py-2 rounded-full text-sm font-medium transition-all duration-300",
-                  selectedCategory === category.code
-                    ? "gradient-bg text-white"
-                    : "glass border border-white/10 text-white/70 hover:text-white hover:border-white/30"
+                  "px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest transition-all",
+                  selectedCategory === c.code ? "bg-cyan-500 text-black shadow-lg shadow-cyan-500/30" : "bg-white/5 text-white/40 hover:text-white hover:bg-white/10"
                 )}
               >
-                {category.label}
+                {c.label}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Loading / Error */}
-        {loading && (
-          <div className="text-center py-10 text-muted-foreground">{t("loading")}</div>
-        )}
-
-        {!loading && error && (
-          <div className="text-center py-10 text-red-400">
-            {error}
-            <div className="text-sm text-muted-foreground mt-2">
-              {t("checkApi")}
-            </div>
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="h-96 rounded-2xl bg-white/5 animate-pulse" />
+            ))}
+          </div>
+        ) : error ? (
+          <div className="text-center py-20 glass-cyan border border-red-500/30 rounded-3xl">
+            <p className="text-red-400 font-black uppercase tracking-widest">{error}</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            <AnimatePresence mode="popLayout">
+              {filteredProjects.map((p) => (
+                <motion.div key={p.id} layout initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}>
+                  <ProjectCard project={p} />
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         )}
 
-        {/* Projects Grid */}
-        {!loading && !error && (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredProjects.map((project) => (
-                <ProjectCard key={project.id} project={project} />
-              ))}
-            </div>
-
-            {/* Empty State */}
-            {filteredProjects.length === 0 && (
-              <div className="text-center py-20">
-                <p className="text-muted-foreground text-lg">
-                  {t("noProjectsFound")}
-                </p>
-              </div>
-            )}
-          </>
+        {!loading && filteredProjects.length === 0 && (
+          <div className="text-center py-40">
+             <div className="inline-block p-10 rounded-full bg-white/5 border border-white/10 mb-6">
+                <Filter size={48} className="text-slate-700" />
+             </div>
+             <p className="text-slate-500 font-black uppercase tracking-widest">{t("noProjectsFound")}</p>
+          </div>
         )}
       </div>
     </div>

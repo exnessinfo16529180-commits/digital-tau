@@ -1,5 +1,8 @@
 import { HeroSection } from "@/components/hero-section"
 import { FeaturedProjects } from "@/components/featured-projects"
+import { WhyDigitalTau } from "@/components/why-digital-tau"
+import { CollaborationSection } from "@/components/collaboration-section"
+import { StatsSection } from "@/components/stats-section"
 import { getProjects } from "@/lib/api"
 
 export default async function HomePage() {
@@ -14,7 +17,10 @@ export default async function HomePage() {
   return (
     <>
       <HeroSection />
+      <StatsSection />
+      <WhyDigitalTau />
       <FeaturedProjects items={projects} />
+      <CollaborationSection />
     </>
   )
 }

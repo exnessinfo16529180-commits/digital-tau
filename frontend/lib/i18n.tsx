@@ -37,6 +37,16 @@ const translations: Translations = {
     ru: "Изучить проекты",
     kz: "Жобаларды зерттеу",
   },
+  futureExcellence: {
+    en: "Future of excellence in AI-powered innovation research",
+    ru: "Будущее передового опыта в области инновационных исследований на базе ИИ",
+    kz: "ЖИ негізіндегі инновациялық зерттеулердегі озық тәжірибенің болашағы",
+  },
+  digitalTransformation: {
+    en: "Digital Transformation & Research Excellence",
+    ru: "Цифровая трансформация и исследовательское мастерство",
+    kz: "Цифрлық трансформация және зерттеу шеберлігі",
+  },
 
   /* ================= HOME STATS (optional) ================= */
   digitalTauByNumbers: {
@@ -119,6 +129,21 @@ const translations: Translations = {
     kz: "«Тұран-Астана» университеті — инновация, зерттеу және студенттер дамуына бағытталған жетекші оқу орны.",
   },
 
+  whyDigitalTau: {
+    en: "Why Digital TAU?",
+    ru: "Почему Digital TAU?",
+    kz: "Неліктен Digital TAU?",
+  },
+  readyToCollaborate: {
+    en: "Ready to collaborate?",
+    ru: "Готовы к сотрудничеству?",
+    kz: "Ынтымақтастыққа дайынсыз ба?",
+  },
+  contactUsDesc: {
+    en: "Let's build the future together. Reach out to us for research partnerships or student projects.",
+    ru: "Давайте строить будущее вместе. Свяжитесь с нами для исследовательского партнерства или студенческих проектов.",
+    kz: "Болашақты бірге құрайық. Зерттеу серіктестігі немесе студенттік жобалар үшін бізге хабарласыңыз.",
+  },
   keyMilestones: {
     en: "Key Milestones",
     ru: "Ключевые достижения",
