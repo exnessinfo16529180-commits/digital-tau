@@ -11,6 +11,8 @@ from .routers.admin.categories import create_admin_categories_router
 from .routers.admin.genres import create_admin_genres_router
 from .routers.admin.projects import create_admin_projects_router
 from .routers.admin.technologies import create_admin_technologies_router
+from .routers.admin.template_auth import create_admin_template_auth_router
+from .routers.admin.template_projects import create_admin_template_projects_router
 from .routers.public.api import create_public_api_router
 from .routers.public.legacy_pages import create_legacy_pages_router
 from .routers.public.root import create_root_router
@@ -43,6 +45,11 @@ def create_app() -> FastAPI:
     app.include_router(create_root_router(settings))
     app.include_router(create_legacy_pages_router(templates_dir()))
 
+    # Original admin interface with templates (restored design)
+    app.include_router(create_admin_template_auth_router(settings, templates_dir()))
+    app.include_router(create_admin_template_projects_router(engine, uploads_dir(), templates_dir()))
+
+    # API-based admin endpoints (kept for backward compatibility)
     app.include_router(create_admin_auth_router(settings))
     app.include_router(create_admin_projects_router(engine, uploads_dir()))
     app.include_router(create_admin_technologies_router(engine))
