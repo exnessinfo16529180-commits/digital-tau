@@ -37,10 +37,12 @@ def create_admin_template_auth_router(settings: Settings, templates_dir: Path) -
     @router.get("/admin/login", response_class=HTMLResponse)
     def admin_login_page(request: Request):
         """Show login page using original template."""
-        return templates.TemplateResponse("admin_login.html", {
+        response = templates.TemplateResponse("admin_login.html", {
             "request": request,
             "error": None
         })
+        response.charset = "utf-8"
+        return response
 
     @router.post("/admin/login")
     async def admin_login(
@@ -54,10 +56,12 @@ def create_admin_template_auth_router(settings: Settings, templates_dir: Path) -
             return RedirectResponse("/admin/projects", status_code=302)
 
         # Show login page with error
-        return templates.TemplateResponse("admin_login.html", {
+        response = templates.TemplateResponse("admin_login.html", {
             "request": request,
             "error": "Неверный логин или пароль"
         }, status_code=401)
+        response.charset = "utf-8"
+        return response
 
     @router.post("/admin/logout")
     def admin_logout(request: Request):

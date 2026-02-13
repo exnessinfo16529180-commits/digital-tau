@@ -58,20 +58,24 @@ def create_admin_template_projects_router(
 
         projects = [dict(r) for r in rows]
 
-        return templates.TemplateResponse("admin_projects.html", {
+        response = templates.TemplateResponse("admin_projects.html", {
             "request": request,
             "projects": projects
         })
+        response.charset = "utf-8"
+        return response
 
     @router.get("/admin/projects/new", response_class=HTMLResponse)
     def admin_projects_new_page(request: Request):
         """Show new project form using original template."""
         require_login(request)
 
-        return templates.TemplateResponse("admin_project_form.html", {
+        response = templates.TemplateResponse("admin_project_form.html", {
             "request": request,
             "project": None
         })
+        response.charset = "utf-8"
+        return response
 
     @router.post("/admin/projects/new")
     async def admin_projects_create(
@@ -146,10 +150,12 @@ def create_admin_template_projects_router(
 
         project = dict(row)
 
-        return templates.TemplateResponse("admin_project_form.html", {
+        response = templates.TemplateResponse("admin_project_form.html", {
             "request": request,
             "project": project
         })
+        response.charset = "utf-8"
+        return response
 
     @router.post("/admin/projects/{project_id}/edit")
     async def admin_projects_update(
